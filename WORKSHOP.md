@@ -167,6 +167,8 @@ import { useState, useEffect, useCallback } from "@wordpress/element";
 Add this import after the `DataForm` import:
 
 ```js
+const { ready } = await import( /* webpackIgnore: true */ '@wordpress/core-abilities' );
+await ready;
 const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 ```
 
