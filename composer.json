@@ -18,7 +18,17 @@
     }
   },
   "require-dev": {
-    "wp-coding-standards/wpcs": "^3.0"
+    "wp-coding-standards/wpcs": "^3.0",
+    "phpunit/phpunit": "^10.5"
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test:workshop": "phpunit --testdox"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "WpAiWorkshopDemo\\Tests\\": "tests/"
+    }
   },
   "require": {
     "wordpress/wp-ai-client": "^0.4.0"
