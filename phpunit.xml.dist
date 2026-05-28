@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnTestsThatTriggerNotices="true">
+    <testsuites>
+        <testsuite name="Workshop Step Verification">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <!--
+         URL of the local WordPress site to probe in Step 3.
+         Override per-shell with WP_AI_WORKSHOP_DEMO_SITE_URL=https://your-site/ if your local URL is different.
+        -->
+        <env name="WP_AI_WORKSHOP_DEMO_SITE_URL" value="https://wordpress.wp.local/" force="false"/>
+    </php>
+</phpunit>
