@@ -7,29 +7,32 @@ import {
     Button,
     Notice,
 } from '@wordpress/components';
-import { useState, useEffect, useCallback } from "@wordpress/element";
+import { useState, useCallback } from '@wordpress/element';
 import { DataForm } from '@wordpress/dataviews/wp';
 
-import { ready } from '@wordpress/core-abilities';
-import { getAbility, executeAbility } from '@wordpress/abilities';
+const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
-await ready;
-
-//const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
+const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
 
 const SettingsTitle = () => {
     return (
         <Heading level={ 1 }>
-            { __( 'WP AI Workshop Demo', 'wp-ai-workshop-demo' ) }
+            { __( 'WP AI Workshop Demo — Photo to Post', 'wp-ai-workshop-demo' ) }
         </Heading>
     );
 };
 
-const GenerateButton = ( { onClick } ) => {
+const GenerateButton = ( { onClick, isBusy } ) => {
     return (
         <div>
-            <Button variant="primary" onClick={ onClick } __next40pxDefaultSize>
-                { __( 'Generate', 'wp-ai-workshop-demo' ) }
+            <Button
+                variant="primary"
+                onClick={ onClick }
+                isBusy={ isBusy }
+                disabled={ isBusy }
+                __next40pxDefaultSize
+            >
+                { __( 'Generate Post', 'wp-ai-workshop-demo' ) }
             </Button>
         </div>
     );
@@ -38,47 +41,38 @@ const GenerateButton = ( { onClick } ) => {
 const SettingsPage = () => {
 
     const [ noticeStatus, setNoticeStatus ] = useState( 'info' );
-    const [ noticeMessage, setNoticeMessage ] = useState( 'Ready...' );
+    const [ noticeMessage, setNoticeMessage ] = useState(
+        __( 'Paste an image URL and (optionally) an angle, then generate a draft post.', 'wp-ai-workshop-demo' )
+    );
+    const [ isBusy, setIsBusy ] = useState( false );
 
-    const [input, setInput] = useState({
-        title: "",
-        prompt: "",
-    });
-
-    useEffect( () => {
-        async function loadInstructionsMessage() {
-            let prompt = '';
-            prompt += 'A simple sentence encouraging the user to create a WordPress Post using AI. ';
-            prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
-            const text = await wp.aiClient.prompt(prompt).generateText();
-            setNoticeMessage( text );
-        }
-        loadInstructionsMessage();
-
-    }, [] );
+    const [ input, setInput ] = useState( {
+        image_url: '',
+        prompt: '',
+    } );
 
     const fields = [
         {
-            id: 'title',
-            label: __( 'Title', 'wp-ai-workshop-demo' ),
+            id: 'image_url',
+            label: __( 'Image URL', 'wp-ai-workshop-demo' ),
             type: 'text',
         },
         {
             id: 'prompt',
-            label: __( 'Prompt', 'wp-ai-workshop-demo' ),
+            label: __( 'Angle / tone (optional)', 'wp-ai-workshop-demo' ),
             type: 'text',
             Edit: 'textarea',
         },
     ];
 
     const generateForm = {
-        fields: [ 'title', 'prompt' ],
+        fields: [ 'image_url', 'prompt' ],
     };
 
     const updateNotice = ( message, status = 'info' ) => {
         setNoticeMessage( message );
         setNoticeStatus( status );
-    }
+    };
 
     const onChange = ( edits ) => {
         setInput( ( current ) => ( {
@@ -88,30 +82,54 @@ const SettingsPage = () => {
     };
 
     const generateFromInput = useCallback( async () => {
-        const generatePostAbility = getAbility( 'wp-ai-workshop-demo/generate-post' );
-        if ( ! generatePostAbility ) {
-            updateNotice('Whoops, post generation Ability not found.', 'error' );
+        if ( ! input.image_url ) {
+            updateNotice( __( 'Please enter an image URL.', 'wp-ai-workshop-demo' ), 'error' );
             return;
         }
+
+        const ability = getAbility( ABILITY );
+        if ( ! ability ) {
+            updateNotice( __( 'Whoops, the create-post-from-photo Ability was not found.', 'wp-ai-workshop-demo' ), 'error' );
+            return;
+        }
+
+        setIsBusy( true );
+        updateNotice( __( 'Looking at your image and writing a post… this can take a moment.', 'wp-ai-workshop-demo' ), 'info' );
+
         try {
-            updateNotice('Attempting to execute post generation Ability, please hold for updates...', 'info' );
-            const result = await executeAbility( 'wp-ai-workshop-demo/generate-post', {
-                title: input.title,
+            const result = await executeAbility( ABILITY, {
+                image_url: input.image_url,
                 prompt: input.prompt,
             } );
-            console.log(result);
+
+            if ( result && result.post_id ) {
+                const editUrl = `post.php?post=${ result.post_id }&action=edit`;
+                updateNotice(
+                    <span>
+                        { ( result.message || __( 'Post created.', 'wp-ai-workshop-demo' ) ) + ' ' }
+                        <a href={ editUrl }>{ __( 'Edit the draft post.', 'wp-ai-workshop-demo' ) }</a>
+                    </span>,
+                    'success'
+                );
+            } else {
+                updateNotice(
+                    result && result.message ? result.message : __( 'Done.', 'wp-ai-workshop-demo' ),
+                    'error'
+                );
+            }
         } catch ( err ) {
-            updateNotice('Error during post generation. Check console for details.', 'error' );
+            updateNotice( __( 'Error during post generation. Check the console for details.', 'wp-ai-workshop-demo' ), 'error' );
+            // eslint-disable-next-line no-console
             console.error( err );
         } finally {
-            updateNotice('Post generation completed!.', 'success' );
+            setIsBusy( false );
         }
     }, [ input ] );
 
     return (
         <VStack spacing={ 4 }>
             <SettingsTitle/>
-            <Notice status={ noticeStatus }>
+            <Notice status={ noticeStatus } isDismissible={ false }>
                 { noticeMessage }
             </Notice>
             <DataForm
@@ -120,7 +138,7 @@ const SettingsPage = () => {
                 form={ generateForm }
                 onChange={ onChange }
             />
-            <GenerateButton onClick={ generateFromInput }/>
+            <GenerateButton onClick={ generateFromInput } isBusy={ isBusy }/>
         </VStack>
     );
 };
