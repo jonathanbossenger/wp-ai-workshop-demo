@@ -7,8 +7,15 @@ import {
     Button,
     Notice,
 } from '@wordpress/components';
-import { useState, useCallback } from "@wordpress/element";
+import { useState, useEffect, useCallback } from "@wordpress/element";
 import { DataForm } from '@wordpress/dataviews/wp';
+
+import { ready } from '@wordpress/core-abilities';
+import { getAbility, executeAbility } from '@wordpress/abilities';
+
+await ready;
+
+//const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
 const SettingsTitle = () => {
     return (
@@ -37,6 +44,18 @@ const SettingsPage = () => {
         title: "",
         prompt: "",
     });
+
+    useEffect( () => {
+        async function loadInstructionsMessage() {
+            let prompt = '';
+            prompt += 'A simple sentence encouraging the user to create a WordPress Post using AI. ';
+            prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
+            const text = await wp.aiClient.prompt(prompt).generateText();
+            setNoticeMessage( text );
+        }
+        loadInstructionsMessage();
+
+    }, [] );
 
     const fields = [
         {
@@ -69,8 +88,24 @@ const SettingsPage = () => {
     };
 
     const generateFromInput = useCallback( async () => {
-        // TODO: Use the Abilities API to execute the 'wp-ai-workshop-demo/generate-post' ability.
-        updateNotice( 'Post generation is not yet implemented.', 'info' );
+        const generatePostAbility = getAbility( 'wp-ai-workshop-demo/generate-post' );
+        if ( ! generatePostAbility ) {
+            updateNotice('Whoops, post generation Ability not found.', 'error' );
+            return;
+        }
+        try {
+            updateNotice('Attempting to execute post generation Ability, please hold for updates...', 'info' );
+            const result = await executeAbility( 'wp-ai-workshop-demo/generate-post', {
+                title: input.title,
+                prompt: input.prompt,
+            } );
+            console.log(result);
+        } catch ( err ) {
+            updateNotice('Error during post generation. Check console for details.', 'error' );
+            console.error( err );
+        } finally {
+            updateNotice('Post generation completed!.', 'success' );
+        }
     }, [ input ] );
 
     return (
