@@ -257,13 +257,19 @@ https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpres
 
 **File:** `includes/admin.php`
 
-Replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
+The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
+
+First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
 
 ```php
     wp_enqueue_script( 'wp-ai-client' );
 
     wp_enqueue_script_module( '@wordpress/core-abilities' );
+```
 
+Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
+
+```php
     wp_enqueue_script_module(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
@@ -271,8 +277,6 @@ Replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment i
         $asset_file['version'],
     );
 ```
-
-> **Note:** `$asset_file` is already defined just above the `// TODO` comment (it feeds the existing style enqueue), so you can reuse it here for the script module version.
 
 **Verify:** `./vendor/bin/phpunit --filter Step05`
 
