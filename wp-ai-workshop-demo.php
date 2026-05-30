@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Workshop Demo
  * Description: A demo plugin to showcase the integration of the WordPress AI Client.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 7.0
  * Author: Jonathan Bossenger
  * Plugin URI: https://github.com/jonathanbossenger/wp-ai-workshop-demo
