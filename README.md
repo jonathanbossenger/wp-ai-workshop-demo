@@ -4,13 +4,15 @@ A demonstration plugin showcasing the integration and capabilities of the WordPr
 
 ## Description
 
-WP AI Workshop Demo provides a practical example of integrating AI capabilities into WordPress. It demonstrates:
+WP AI Workshop Demo provides a practical example of integrating AI capabilities into WordPress. Its core feature — **Photo to Post** — takes an image URL, describes the image with an AI vision model, writes a blog post about it, and creates a draft post with the photo as the featured image. It demonstrates:
 
-- Text generation using AI
-- Image generation using AI
-- Creating WordPress posts with AI-generated content and featured images
-- Custom WordPress Abilities API integration
-- Admin interface for interacting with AI features
+- AI vision (image understanding) using the WP AI Client
+- AI text generation for post title and Block Editor content
+- Composing multiple WordPress Abilities (one ability calling others via `WP_Ability::execute()`)
+- Exposing abilities over REST and MCP
+- An admin interface (React + DataViews) that drives an ability from the browser
+
+See [`WORKSHOP.md`](WORKSHOP.md) to build this plugin step by step.
 
 ## Requirements
 

@@ -2,8 +2,9 @@
 /**
  * Step 2 — Ability Hook Registration.
  *
- * Verifies that the ability category and generate-post ability are wired
- * into the WordPress Abilities API via the appropriate init hooks.
+ * Verifies that the ability category and the three Photo to Post abilities
+ * are wired into the WordPress Abilities API via the appropriate init hooks
+ * in the main plugin file.
  *
  * @package wp-ai-workshop-demo
  */
@@ -19,7 +20,7 @@ final class Step02AbilityHooksTest extends WorkshopTestCase {
 	public function testTodoCommentRemoved(): void {
 		$this->assertPluginFileNotContains(
 			self::FILE,
-			'// TODO: Register ability category and generate post ability hooks.'
+			'// TODO: Register the ability category and the three Photo to Post ability hooks.'
 		);
 	}
 
@@ -30,10 +31,24 @@ final class Step02AbilityHooksTest extends WorkshopTestCase {
 		);
 	}
 
-	public function testAbilityHookRegistered(): void {
+	public function testDescribeImageHookRegistered(): void {
 		$this->assertPluginFileContains(
 			self::FILE,
-			"add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_generate_post_ability' );"
+			"add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_describe_image_ability' );"
+		);
+	}
+
+	public function testGeneratePostFromDescriptionHookRegistered(): void {
+		$this->assertPluginFileContains(
+			self::FILE,
+			"add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_generate_post_from_description_ability' );"
+		);
+	}
+
+	public function testCreatePostFromPhotoHookRegistered(): void {
+		$this->assertPluginFileContains(
+			self::FILE,
+			"add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_create_post_from_photo_ability' );"
 		);
 	}
 }

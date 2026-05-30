@@ -28,18 +28,19 @@ To run a single step:
 | Test file | Workshop step |
 | --- | --- |
 | `Step00PrerequisitesTest.php` | Step 0 — `composer install` + `npm install` have been run, and at least one AI Connector (OpenAI / Anthropic / Google) is active with an API key configured |
-| `Step01AbilityRegistrationTest.php` | Step 1 — Ability category + generate-post ability are registered in `includes/abilities.php` |
-| `Step02AbilityHooksTest.php` | Step 2 — Ability hooks added to `wp-ai-workshop-demo.php` |
+| `Step01AbilityRegistrationTest.php` | Step 1 — Ability category + the three Photo to Post abilities (`describe-image`, `generate-post-from-description`, `create-post-from-photo`) are registered in `includes/abilities.php` |
+| `Step02AbilityHooksTest.php` | Step 2 — Ability category + three ability hooks added to `wp-ai-workshop-demo.php` |
 | `Step03AbilitiesRestEndpointTest.php` | Step 3 — `/wp-abilities/*` REST namespace is reachable on the live Studio site (skipped offline) |
-| `Step04AiClientAutoloaderTest.php` | Step 4 (first) — wp-ai-client autoloader is required from the main plugin file |
-| `Step04EnqueueScriptsTest.php` | Step 4 (second) — `wp-ai-client` and `@wordpress/core-abilities` scripts are enqueued, and the plugin script declares the dependency |
-| `Step05ContentGenerationTest.php` | Step 5 — `wp_ai_workshop_generate_content()` uses `wp_ai_client_prompt()` |
-| `Step06ImageGenerationTest.php` | Step 6 — `wp_ai_workshop_demo_create_image()` uses `wp_ai_client_prompt()` |
-| `Step07SettingsPageTest.php` | Step 7 — `src/components/settings-page.jsx` has the abilities import, welcome message, and ability call, AND `build/index.js` has been re-built |
-| `Step08McpAdapterTest.php` | Step 8 — Ability meta config exposes the ability via MCP (`'mcp' => array( 'public' => true )`) |
+| `Step04AiClientAutoloaderTest.php` | Step 4 — wp-ai-client autoloader is required from the main plugin file |
+| `Step05EnqueueScriptsTest.php` | Step 5 — `wp-ai-client` and `@wordpress/core-abilities` scripts are enqueued, and the plugin script declares the dependency |
+| `Step06DescribeImageTest.php` | Step 6 — `wp_ai_workshop_demo_describe_image()` fetches the image as a data URI and uses `wp_ai_client_prompt()->with_file()->generate_text()` (vision) |
+| `Step07GeneratePostCopyTest.php` | Step 7 — `wp_ai_workshop_demo_generate_post_from_description()` uses `wp_ai_client_prompt()` and parses a JSON `{title, content}` response |
+| `Step08CreatePostFromPhotoTest.php` | Step 8 — `wp_ai_workshop_demo_create_post_from_photo()` composes the two abilities via `WP_Ability::execute()`, then creates a draft post and sets the featured image |
+| `Step09SettingsPageTest.php` | Step 9 — `src/components/settings-page.jsx` has the abilities import, image URL form, and `create-post-from-photo` ability call, AND `build/index.js` has been re-built |
+| `Step10McpAdapterTest.php` | Step 10 — Each ability's meta config exposes it via MCP (`'mcp' => array( 'public' => true )`) |
 
 ## Notes
 
 - **Step 0** AI Connector check shells out to `studio wp` to read the active plugins list and the `wp_ai_client_provider_credentials` option. It is *skipped* (not failed) when the `studio` CLI is unavailable, so the suite still runs in environments without WordPress Studio.
 - **Step 3** requires a local development environment url. Set this url in the `phpunit.xml.dist` file under `<php><env name="WP_AI_WORKSHOP_DEMO_SITE_URL" .../></php>`). To use a different URL: edit `phpunit.xml.dist`, or export `WP_AI_WORKSHOP_DEMO_SITE_URL=https://your-site/` in your shell — the shell value takes precedence (`force="false"`). The test is *skipped* (not failed) when the site is unreachable, so the suite stays green when running offline.
-- **Step 8 only checks the code change.** Installing the [MCP Adapter](https://github.com/WordPress/mcp-adapter) and configuring an MCP client are out of scope for an automated test.
+- **Step 10 only checks the code change.** Installing the [MCP Adapter](https://github.com/WordPress/mcp-adapter) and configuring an MCP client are out of scope for an automated test.
