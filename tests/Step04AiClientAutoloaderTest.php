@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 4 (first of two "4"s in WORKSHOP.md) — Add WP AI Client autoloader.
+ * Step 4 — Add WP AI Client autoloader.
  *
  * Verifies the main plugin file includes the wp-ai-client autoloader so
  * the wp-ai-client JavaScript can be enqueued.

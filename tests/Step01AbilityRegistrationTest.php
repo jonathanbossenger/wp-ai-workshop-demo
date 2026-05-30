@@ -2,9 +2,12 @@
 /**
  * Step 1 — Ability Registration.
  *
- * Verifies includes/abilities.php has been updated to register the
- * 'wp-ai-workshop-demo' category and the 'wp-ai-workshop-demo/generate-post'
- * ability.
+ * Verifies includes/abilities.php registers the 'wp-ai-workshop-demo'
+ * category and the three Photo to Post abilities:
+ *
+ *   - wp-ai-workshop-demo/describe-image
+ *   - wp-ai-workshop-demo/generate-post-from-description
+ *   - wp-ai-workshop-demo/create-post-from-photo
  *
  * @package wp-ai-workshop-demo
  */
@@ -17,94 +20,103 @@ final class Step01AbilityRegistrationTest extends WorkshopTestCase {
 
 	private const FILE = 'includes/abilities.php';
 
+	private const CATEGORY_FN = 'wp_ai_workshop_demo_register_ability_categories';
+	private const DESCRIBE_FN = 'wp_ai_workshop_demo_register_describe_image_ability';
+	private const GENERATE_FN = 'wp_ai_workshop_demo_register_generate_post_from_description_ability';
+	private const PHOTO_FN    = 'wp_ai_workshop_demo_register_create_post_from_photo_ability';
+
+	// --- Category. ---
+
 	public function testCategoryTodoRemoved(): void {
 		$this->assertFunctionBodyNotContains(
 			self::FILE,
-			'wp_ai_workshop_demo_register_ability_categories',
+			self::CATEGORY_FN,
 			"TODO: Register the 'wp-ai-workshop-demo' ability category."
 		);
 	}
 
 	public function testCategoryRegistered(): void {
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_ability_categories',
-			'wp_register_ability_category('
-		);
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_ability_categories',
-			"'wp-ai-workshop-demo'"
-		);
+		$this->assertFunctionBodyContains( self::FILE, self::CATEGORY_FN, 'wp_register_ability_category(' );
+		$this->assertFunctionBodyContains( self::FILE, self::CATEGORY_FN, "'wp-ai-workshop-demo'" );
 	}
 
-	public function testGeneratePostAbilityTodoRemoved(): void {
+	// --- describe-image ability. ---
+
+	public function testDescribeImageTodoRemoved(): void {
 		$this->assertFunctionBodyNotContains(
 			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"TODO: Register the 'wp-ai-workshop-demo/generate-post' ability."
+			self::DESCRIBE_FN,
+			"TODO: Register the 'wp-ai-workshop-demo/describe-image' ability."
 		);
 	}
 
-	public function testGeneratePostAbilityRegistered(): void {
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			'wp_register_ability('
-		);
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"'wp-ai-workshop-demo/generate-post'"
-		);
+	public function testDescribeImageRegistered(): void {
+		$this->assertFunctionBodyContains( self::FILE, self::DESCRIBE_FN, 'wp_register_ability(' );
+		$this->assertFunctionBodyContains( self::FILE, self::DESCRIBE_FN, "'wp-ai-workshop-demo/describe-image'" );
 	}
 
-	public function testGeneratePostAbilityDefinesInputSchema(): void {
-		$body = $this->getFunctionBody(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability'
-		);
+	public function testDescribeImageSchemaAndCallback(): void {
+		$body = $this->getFunctionBody( self::FILE, self::DESCRIBE_FN );
 		$this->assertStringContainsString( "'input_schema'", $body );
-		$this->assertStringContainsString( "'title'", $body );
-		$this->assertStringContainsString( "'prompt'", $body );
+		$this->assertStringContainsString( "'image_url'", $body );
+		$this->assertStringContainsString( "'output_schema'", $body );
+		$this->assertStringContainsString( "'description'", $body );
+		$this->assertStringContainsString( "'execute_callback'", $body );
+		$this->assertStringContainsString( "'wp_ai_workshop_demo_describe_image'", $body );
+		$this->assertStringContainsString( "current_user_can( 'edit_posts' )", $body );
+		$this->assertStringContainsString( "'show_in_rest' => true", $body );
 	}
 
-	public function testGeneratePostAbilityDefinesOutputSchema(): void {
-		$body = $this->getFunctionBody(
+	// --- generate-post-from-description ability. ---
+
+	public function testGeneratePostFromDescriptionTodoRemoved(): void {
+		$this->assertFunctionBodyNotContains(
 			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability'
+			self::GENERATE_FN,
+			"TODO: Register the 'wp-ai-workshop-demo/generate-post-from-description' ability."
 		);
+	}
+
+	public function testGeneratePostFromDescriptionRegistered(): void {
+		$this->assertFunctionBodyContains( self::FILE, self::GENERATE_FN, 'wp_register_ability(' );
+		$this->assertFunctionBodyContains( self::FILE, self::GENERATE_FN, "'wp-ai-workshop-demo/generate-post-from-description'" );
+	}
+
+	public function testGeneratePostFromDescriptionSchemaAndCallback(): void {
+		$body = $this->getFunctionBody( self::FILE, self::GENERATE_FN );
+		$this->assertStringContainsString( "'input_schema'", $body );
+		$this->assertStringContainsString( "'description'", $body );
+		$this->assertStringContainsString( "'output_schema'", $body );
+		$this->assertStringContainsString( "'title'", $body );
+		$this->assertStringContainsString( "'content'", $body );
+		$this->assertStringContainsString( "'execute_callback'", $body );
+		$this->assertStringContainsString( "'wp_ai_workshop_demo_generate_post_from_description'", $body );
+	}
+
+	// --- create-post-from-photo orchestrator ability. ---
+
+	public function testCreatePostFromPhotoTodoRemoved(): void {
+		$this->assertFunctionBodyNotContains(
+			self::FILE,
+			self::PHOTO_FN,
+			"TODO: Register the 'wp-ai-workshop-demo/create-post-from-photo' ability."
+		);
+	}
+
+	public function testCreatePostFromPhotoRegistered(): void {
+		$this->assertFunctionBodyContains( self::FILE, self::PHOTO_FN, 'wp_register_ability(' );
+		$this->assertFunctionBodyContains( self::FILE, self::PHOTO_FN, "'wp-ai-workshop-demo/create-post-from-photo'" );
+	}
+
+	public function testCreatePostFromPhotoSchemaAndCallback(): void {
+		$body = $this->getFunctionBody( self::FILE, self::PHOTO_FN );
+		$this->assertStringContainsString( "'input_schema'", $body );
+		$this->assertStringContainsString( "'image_url'", $body );
 		$this->assertStringContainsString( "'output_schema'", $body );
 		$this->assertStringContainsString( "'message'", $body );
 		$this->assertStringContainsString( "'post_id'", $body );
-	}
-
-	public function testGeneratePostAbilityWiresExecuteCallback(): void {
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"'execute_callback'"
-		);
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"'wp_ai_workshop_demo_generate_post'"
-		);
-	}
-
-	public function testGeneratePostAbilityRequiresEditPostsCapability(): void {
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"current_user_can( 'edit_posts' )"
-		);
-	}
-
-	public function testGeneratePostAbilityExposedInRest(): void {
-		$this->assertFunctionBodyContains(
-			self::FILE,
-			'wp_ai_workshop_demo_register_generate_post_ability',
-			"'show_in_rest' => true"
-		);
+		$this->assertStringContainsString( "'execute_callback'", $body );
+		$this->assertStringContainsString( "'wp_ai_workshop_demo_create_post_from_photo'", $body );
+		$this->assertStringContainsString( "current_user_can( 'edit_posts' )", $body );
 	}
 }

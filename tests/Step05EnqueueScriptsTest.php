@@ -1,7 +1,6 @@
 <?php
 /**
- * Step 4 (second of two "4"s in WORKSHOP.md) — Enqueue WP AI Client and
- * Abilities Scripts.
+ * Step 5 — Enqueue WP AI Client and Abilities Scripts.
  *
  * Verifies includes/admin.php enqueues the wp-ai-client script and the
  * @wordpress/core-abilities script module, and that the plugin's own
@@ -14,9 +13,10 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step04EnqueueScriptsTest extends WorkshopTestCase {
+final class Step05EnqueueScriptsTest extends WorkshopTestCase {
 
 	private const FILE = 'includes/admin.php';
+	private const FN   = 'wp_ai_workshop_demo_admin_enqueue_scripts';
 
 	public function testTodoCommentRemoved(): void {
 		$this->assertPluginFileNotContains(
@@ -28,7 +28,7 @@ final class Step04EnqueueScriptsTest extends WorkshopTestCase {
 	public function testWpAiClientScriptEnqueued(): void {
 		$this->assertFunctionBodyContains(
 			self::FILE,
-			'wp_ai_workshop_demo_admin_enqueue_scripts',
+			self::FN,
 			"wp_enqueue_script( 'wp-ai-client' );"
 		);
 	}
@@ -36,16 +36,13 @@ final class Step04EnqueueScriptsTest extends WorkshopTestCase {
 	public function testCoreAbilitiesModuleEnqueued(): void {
 		$this->assertFunctionBodyContains(
 			self::FILE,
-			'wp_ai_workshop_demo_admin_enqueue_scripts',
+			self::FN,
 			"wp_enqueue_script_module( '@wordpress/core-abilities' );"
 		);
 	}
 
 	public function testPluginScriptDeclaresCoreAbilitiesDependency(): void {
-		$body = $this->getFunctionBody(
-			self::FILE,
-			'wp_ai_workshop_demo_admin_enqueue_scripts'
-		);
+		$body = $this->getFunctionBody( self::FILE, self::FN );
 
 		// Find the wp_enqueue_script_module call that registers our plugin script.
 		$pattern = '/wp_enqueue_script_module\s*\(\s*[\'"]wp-ai-workshop-demo-script[\'"](?<args>.*?)\)\s*;/s';

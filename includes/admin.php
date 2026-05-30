@@ -48,14 +48,16 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
 		return;
 	}
 
-    // TODO: Enqueue the wp-ai-client and abilities scripts.
+    wp_enqueue_script( 'wp-ai-client' );
+
+    wp_enqueue_script_module( '@wordpress/core-abilities' );
 
     $asset_file = include plugin_dir_path( __DIR__ ) . 'build/index.asset.php';
 
     wp_enqueue_script_module(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
-        array(),
+        array( '@wordpress/core-abilities' ),
         $asset_file['version'],
     );
 
