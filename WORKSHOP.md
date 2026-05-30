@@ -264,8 +264,6 @@ Replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment i
 
     wp_enqueue_script_module( '@wordpress/core-abilities' );
 
-    $asset_file = include plugin_dir_path( __DIR__ ) . 'build/index.asset.php';
-
     wp_enqueue_script_module(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
@@ -273,6 +271,8 @@ Replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment i
         $asset_file['version'],
     );
 ```
+
+> **Note:** `$asset_file` is already defined just above the `// TODO` comment (it feeds the existing style enqueue), so you can reuse it here for the script module version.
 
 **Verify:** `./vendor/bin/phpunit --filter Step05`
 
@@ -566,30 +566,7 @@ const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
 
 > **Key point:** The `webpackIgnore: true` comment tells webpack/wp-scripts not to try to bundle this import, due to the way it's provided by WordPress. There's an open issue to fix this issue in wp-scripts here: https://github.com/WordPress/gutenberg/pull/76397
 
-The form collects an **Image URL** and an optional **angle/tone**:
-
-```js
-    const [ input, setInput ] = useState( {
-        image_url: '',
-        prompt: '',
-    } );
-
-    const fields = [
-        {
-            id: 'image_url',
-            label: __( 'Image URL', 'wp-ai-workshop-demo' ),
-            type: 'text',
-        },
-        {
-            id: 'prompt',
-            label: __( 'Angle / tone (optional)', 'wp-ai-workshop-demo' ),
-            type: 'text',
-            Edit: 'textarea',
-        },
-    ];
-```
-
-Replace the `// TODO: Use the Abilities API to execute the 'wp-ai-workshop-demo/create-post-from-photo' ability.` comment in `generateFromInput` with the ability call:
+The component already renders an **Image URL** field and an optional **angle/tone** field. Replace the `// TODO: Use the Abilities API to execute the 'wp-ai-workshop-demo/create-post-from-photo' ability.` comment in `generateFromInput` with the ability call:
 
 ```js
         const ability = getAbility( ABILITY );
