@@ -32,4 +32,4 @@ add_action( 'admin_enqueue_scripts', 'wp_ai_workshop_demo_admin_enqueue_scripts'
 // TODO: Register the ability category and the three Photo to Post ability hooks.
 
 // Filters
-add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_request_timeout' );
+// TODO: Hook wp_ai_workshop_demo_set_request_timeout into the wp_ai_client_default_request_timeout filter.

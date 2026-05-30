@@ -620,7 +620,38 @@ Now open **Tools â†’ WP AI Workshop Demo**, paste an image URL, and click **Gene
 
 ---
 
-## 10. Expose the abilities via the MCP Adapter
+## 10. Increase the AI Client request timeout
+
+Photo to Post makes two AI calls in a row (vision, then text generation) and also sideloads an image, so a single request can easily run longer than WordPress's default HTTP timeout. The AI Client exposes a `wp_ai_client_default_request_timeout` filter so you can raise it.
+
+**File:** `includes/ai-client.php`
+
+Replace the `// TODO: Add the wp_ai_workshop_demo_set_request_timeout() function to increase the AI Client request timeout.` comment with:
+
+```php
+/**
+ * Set a custom request timeout for the AI Client.
+ *
+ * @return int
+ */
+function wp_ai_workshop_demo_set_request_timeout() {
+    return 120;
+}
+```
+
+**File:** `wp-ai-workshop-demo.php`
+
+Replace the `// TODO: Hook wp_ai_workshop_demo_set_request_timeout into the wp_ai_client_default_request_timeout filter.` comment with:
+
+```php
+add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_request_timeout' );
+```
+
+**Verify:** `./vendor/bin/phpunit --filter Step10`
+
+---
+
+## 11. Expose the abilities via the MCP Adapter
 
 Update each Ability's registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
 
@@ -661,7 +692,7 @@ Then ask your MCP client to "create a post from this photo" with an image URL â€
 
 MCP remote troubleshooting: https://github.com/Automattic/mcp-wordpress-remote/blob/trunk/Docs/troubleshooting.md
 
-**Verify:** `./vendor/bin/phpunit --filter Step10`
+**Verify:** `./vendor/bin/phpunit --filter Step11`
 
 ---
 
