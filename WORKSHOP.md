@@ -18,15 +18,7 @@ The orchestrator demonstrates **ability composition** — one ability calling ot
 
 ## How this workshop works
 
-Each step below adds a piece of code, usually replacing a `// TODO:` comment. After each step you can verify your work by running the automated step-verification tests:
-
-```shell
-composer test           # run all step tests
-composer test:workshop  # same, grouped by step (testdox)
-./vendor/bin/phpunit --filter Step06   # run a single step
-```
-
-The tests perform static inspection of your source files — green means the step is complete. See [`tests/README.md`](tests/README.md) for details.
+Each step below adds a piece of code, usually replacing a `// TODO:` comment. 
 
 ---
 
@@ -199,8 +191,6 @@ Replace the body of `wp_ai_workshop_demo_register_create_post_from_photo_ability
 	);
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step01`
-
 ---
 
 ## 2. Ability Hook Registration
@@ -216,8 +206,6 @@ add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_generate_post
 add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_create_post_from_photo_ability' );
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step02`
-
 ---
 
 ## 3. Test the Abilities REST API endpoint
@@ -225,13 +213,18 @@ add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_create_post_f
 The Abilities API exposes registered abilities over the REST API. Create an Application Password for your admin user, then:
 
 ```shell
-curl -u 'USERNAME:APPLICATION_PASSWORD' https://wordpress.wp.local/wp-json/wp-abilities/v1/abilities
+curl -u 'USERNAME:APPLICATION_PASSWORD' https://yoursite.local/wp-json/wp-abilities/v1/abilities
 ```
 
 You should see your three `wp-ai-workshop-demo/*` abilities listed.
 
-**Verify:** `./vendor/bin/phpunit --filter Step03` (checks the `/wp-abilities/*` namespace is reachable; skipped if the site is offline)
+Note: make sure your local WordPress site has Permalinks enabled (anything but "Plain") or the REST API endpoints won't work.
 
+Tip: Use jq to auto-format the JSON response:
+
+```shell
+curl -u 'USERNAME:APPLICATION_PASSWORD' https://yoursite.local/wp-json/wp-abilities/v1/abilities | jq
+```
 ---
 
 ## 4. Add the WP AI Client autoloader
@@ -247,42 +240,9 @@ if ( file_exists( __DIR__ . '/vendor/wordpress/wp-ai-client/autoload.php' ) ) {
 }
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step04`
-
 ---
 
-## 5. Enqueue the WP AI Client and Abilities scripts
-
-https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
-
-**File:** `includes/admin.php`
-
-The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
-
-First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
-
-```php
-    wp_enqueue_script( 'wp-ai-client' );
-
-    wp_enqueue_script_module( '@wordpress/core-abilities' );
-```
-
-Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
-
-```php
-    wp_enqueue_script_module(
-        'wp-ai-workshop-demo-script',
-        plugins_url( 'build/index.js', __DIR__ ),
-        array( '@wordpress/core-abilities' ),
-        $asset_file['version'],
-    );
-```
-
-**Verify:** `./vendor/bin/phpunit --filter Step05`
-
----
-
-## 6. Describe an image (Vision)
+## 5. Describe an image (Vision)
 
 This is the first AI call: send the image to a vision-capable model and get back a description.
 
@@ -368,11 +328,9 @@ function wp_ai_workshop_demo_image_url_to_data_uri( $image_url ) {
 
 > **Key gotcha:** `wp_ai_client_prompt()` returns a builder whose `generate_text()` *returns* a `WP_Error` on failure (it does not throw), so always check `is_wp_error()`. And vision providers such as Anthropic require the image **inline as base64**, not as a remote URL — that is why we fetch it and build a data URI.
 
-**Verify:** `./vendor/bin/phpunit --filter Step06`
-
 ---
 
-## 7. Generate post copy from the description
+## 6. Generate post copy from the description
 
 The second AI call: turn the description into a post title and body. We ask the model for a JSON object and parse it.
 
@@ -447,11 +405,9 @@ function wp_ai_workshop_demo_decode_json_response( $text ) {
 }
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step07`
-
 ---
 
-## 8. Create a post from a photo (Orchestration)
+## 7. Create a post from a photo (Orchestration)
 
 Now compose the two abilities and create the post. This is where one ability calls other abilities.
 
@@ -552,7 +508,34 @@ function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url )
 }
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step08`
+## 8. Enqueue the WP AI Client and Abilities scripts
+
+https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
+
+**File:** `includes/admin.php`
+
+The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
+
+First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
+
+```php
+    wp_enqueue_script( 'wp-ai-client' );
+
+    wp_enqueue_script_module( '@wordpress/core-abilities' );
+```
+
+Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
+
+```php
+    wp_enqueue_script_module(
+        'wp-ai-workshop-demo-script',
+        plugins_url( 'build/index.js', __DIR__ ),
+        array( '@wordpress/core-abilities' ),
+        $asset_file['version'],
+    );
+```
+
+---
 
 ---
 
@@ -616,8 +599,6 @@ npm run build
 
 Now open **Tools → WP AI Workshop Demo**, paste an image URL, and click **Generate Post**.
 
-**Verify:** `./vendor/bin/phpunit --filter Step09`
-
 ---
 
 ## 10. Increase the AI Client request timeout
@@ -647,8 +628,6 @@ Replace the `// TODO: Hook wp_ai_workshop_demo_set_request_timeout into the wp_a
 add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_request_timeout' );
 ```
 
-**Verify:** `./vendor/bin/phpunit --filter Step10`
-
 ---
 
 ## 11. Expose the abilities via the MCP Adapter
@@ -673,11 +652,11 @@ These Abilities can now be adapted to MCP Tools, and be driven by an MCP client 
 ```json
 {
   "mcpServers": {
-    "wordpress-http-default": {
+    "wordpress-ai-demo": {
       "command": "npx",
       "args": [ "-y", "@automattic/mcp-wordpress-remote@latest" ],
       "env": {
-        "WP_API_URL": "https://wordpress.wp.local/wp-json/mcp/mcp-adapter-default-server",
+        "WP_API_URL": "https://yoursite.local/wp-json/mcp/mcp-adapter-default-server",
         "WP_API_USERNAME": "your-username",
         "WP_API_PASSWORD": "your-application-password"
       }
@@ -686,20 +665,12 @@ These Abilities can now be adapted to MCP Tools, and be driven by an MCP client 
 }
 ```
 
-> **VS Code users:** In VS Code the MCP server block is named simply servers.
+> **VS Code users:** In VS Code the MCP server block is named simply "servers".
 
 Then ask your MCP client to "create a post from this photo" with an image URL — it will discover and call your `create-post-from-photo` ability.
 
 MCP remote troubleshooting: https://github.com/Automattic/mcp-wordpress-remote/blob/trunk/Docs/troubleshooting.md
 
-**Verify:** `./vendor/bin/phpunit --filter Step11`
-
 ---
 
 ## Done
-
-Run the full suite to confirm every step is complete:
-
-```shell
-composer test:workshop
-```
