@@ -227,22 +227,7 @@ curl -u 'USERNAME:APPLICATION_PASSWORD' https://yoursite.local/wp-json/wp-abilit
 ```
 ---
 
-## 4. Add the WP AI Client autoloader (no longer required)
-
-**File:** `wp-ai-workshop-demo.php`
-
-Replace the `// TODO: Include the WP AI Client Autoloader, so that we can use the AI Client.` comment with:
-
-```php
-// Include the Composer autoloader.
-if ( file_exists( __DIR__ . '/vendor/wordpress/wp-ai-client/autoload.php' ) ) {
-    require_once __DIR__ . '/vendor/wordpress/wp-ai-client/autoload.php';
-}
-```
-
----
-
-## 5. Describe an image (Vision)
+## 4. Describe an image (Vision)
 
 This is the first AI call: send the image to a vision-capable model and get back a description.
 
@@ -330,7 +315,7 @@ function wp_ai_workshop_demo_image_url_to_data_uri( $image_url ) {
 
 ---
 
-## 6. Generate post copy from the description
+## 5. Generate post copy from the description
 
 The second AI call: turn the description into a post title and body. We ask the model for a JSON object and parse it.
 
@@ -407,7 +392,7 @@ function wp_ai_workshop_demo_decode_json_response( $text ) {
 
 ---
 
-## 7. Create a post from a photo (Orchestration)
+## 6. Create a post from a photo (Orchestration)
 
 Now compose the two abilities and create the post. This is where one ability calls other abilities.
 
@@ -508,7 +493,7 @@ function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url )
 }
 ```
 
-## 8. Enqueue the WP AI Client and Abilities scripts
+## 7. Enqueue the WP AI Client and Abilities scripts
 
 https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
 
@@ -539,7 +524,7 @@ Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script'
 
 ---
 
-## 9. Build the Settings Page form
+## 8. Build the Settings Page form
 
 **File:** `src/components/settings-page.jsx`
 
@@ -601,7 +586,7 @@ Now open **Tools → WP AI Workshop Demo**, paste an image URL, and click **Gene
 
 ---
 
-## 10. Increase the AI Client request timeout
+## 9. Increase the AI Client request timeout
 
 Photo to Post makes two AI calls in a row (vision, then text generation) and also sideloads an image, so a single request can easily run longer than WordPress's default HTTP timeout. The AI Client exposes a `wp_ai_client_default_request_timeout` filter so you can raise it.
 
@@ -630,7 +615,7 @@ add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_req
 
 ---
 
-## 11. Expose the abilities via the MCP Adapter
+## 10. Expose the abilities via the MCP Adapter
 
 Update each Ability's registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
 
