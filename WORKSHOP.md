@@ -227,7 +227,7 @@ curl -u 'USERNAME:APPLICATION_PASSWORD' https://yoursite.local/wp-json/wp-abilit
 ```
 ---
 
-## 4. Add the WP AI Client autoloader
+## 4. Add the WP AI Client autoloader (no longer required)
 
 **File:** `wp-ai-workshop-demo.php`
 
