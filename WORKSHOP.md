@@ -476,6 +476,13 @@ function wp_ai_workshop_demo_create_post( $title, $content, $image_url ) {
  * featured image for a post.
  */
 function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url ) {
+    // Verify that the image_url is a valid url, just to be safe.
+    if ( ! wp_http_validate_url( $image_url ) ) {
+        return new WP_Error( 'invalid_url', 'Image URL failed validation.' );
+    }
+      
+    // The media_sideload_image() function is typically only used in the admin context
+    // This ensures that it can be used outside the admin context, such as in a REST API request or MCP tool.
 	if ( ! function_exists( 'media_sideload_image' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
