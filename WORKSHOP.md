@@ -545,6 +545,33 @@ const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
 
 > **Key point:** The `webpackIgnore: true` comment tells webpack/wp-scripts not to try to bundle this import, due to the way it's provided by WordPress. There's an open issue to fix this issue in wp-scripts here: https://github.com/WordPress/gutenberg/pull/76397
 
+### Add an AI welcome message
+
+Use the AI Client to greet the user with a short, AI-generated message when the settings page loads.
+
+First, add `useEffect` to the `@wordpress/element` import:
+
+```js
+import { useState, useEffect, useCallback } from '@wordpress/element';
+```
+
+Then, inside the `SettingsPage` component, add this `useEffect` after the `useState` declarations (after the `input` state). On mount it asks the AI Client for a single encouraging sentence and shows it in the notice:
+
+```js
+    useEffect( () => {
+        async function loadInstructionsMessage() {
+            let prompt = '';
+            prompt += 'A simple sentence encouraging the user to create a WordPress Post from a photo using AI. ';
+            prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
+            const text = await wp.aiClient.prompt( prompt ).generateText();
+            setNoticeMessage( text );
+        }
+        loadInstructionsMessage();
+    }, [] );
+```
+
+### Generate a post via the Ability
+
 The component already renders an **Image URL** field and an optional **angle/tone** field. Replace the `// TODO: Use the Abilities API to execute the 'wp-ai-workshop-demo/create-post-from-photo' ability.` comment in `generateFromInput` with the ability call:
 
 ```js
