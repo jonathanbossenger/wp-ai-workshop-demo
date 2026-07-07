@@ -3,7 +3,8 @@
  * Step 9 — Settings Page (Image URL form + Ability call).
  *
  * Verifies src/components/settings-page.jsx imports the Abilities API,
- * renders an image URL form, and wires the Generate button to execute the
+ * adds the AI welcome message effect, renders an image URL form, and wires
+ * the Generate button to execute the
  * 'wp-ai-workshop-demo/create-post-from-photo' ability.
  *
  * Also verifies the JS bundle (build/index.js) has been re-built so the
@@ -33,14 +34,24 @@ final class Step09SettingsPageTest extends WorkshopTestCase {
 		$this->assertStringContainsString( 'executeAbility', $contents );
 	}
 
-	// 9b — Image URL form.
+	// 9b — AI Welcome Message.
+
+	public function testWelcomeMessageEffectAdded(): void {
+		$contents = $this->readPluginFile( self::SRC_FILE );
+		$this->assertStringContainsString( 'useEffect(', $contents );
+		$this->assertStringContainsString( 'wp.aiClient.prompt', $contents );
+		$this->assertStringContainsString( 'generateText', $contents );
+		$this->assertStringContainsString( 'setNoticeMessage', $contents );
+	}
+
+	// 9c — Image URL form.
 
 	public function testFormUsesImageUrlField(): void {
 		$contents = $this->readPluginFile( self::SRC_FILE );
 		$this->assertStringContainsString( 'image_url', $contents );
 	}
 
-	// 9c — Generate via the create-post-from-photo ability.
+	// 9d — Generate via the create-post-from-photo ability.
 
 	public function testTodoRemovedFromGenerateFromInput(): void {
 		$this->assertPluginFileNotContains(
@@ -56,7 +67,7 @@ final class Step09SettingsPageTest extends WorkshopTestCase {
 		$this->assertStringContainsString( 'executeAbility(', $contents );
 	}
 
-	// 9d — Build artifact reflects the new source.
+	// 9e — Build artifact reflects the new source.
 
 	public function testBuildOutputHasBeenRegenerated(): void {
 		$buildPath = WP_AI_WORKSHOP_DEMO_PLUGIN_DIR . '/' . self::BUILD_FILE;
