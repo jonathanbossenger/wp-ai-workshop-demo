@@ -562,6 +562,7 @@ Then, inside the `SettingsPage` component, add this `useEffect` after the `useSt
         async function loadInstructionsMessage() {
             let prompt = '';
             prompt += 'A simple sentence encouraging the user to create a WordPress Post from a photo using AI. ';
+            prompt =+ 'The user can paste an image URL and (optionally) an angle/tone to generate the post. ';
             prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
             const text = await wp.aiClient.prompt( prompt ).generateText();
             setNoticeMessage( text );

@@ -38,7 +38,7 @@ const SettingsPage = () => {
 
     const [ noticeStatus, setNoticeStatus ] = useState( 'info' );
     const [ noticeMessage, setNoticeMessage ] = useState(
-        __( 'Paste an image URL and (optionally) an angle, then generate a draft post.', 'wp-ai-workshop-demo' )
+        __( 'Ready....', 'wp-ai-workshop-demo' )
     );
     const [ isBusy, setIsBusy ] = useState( false );
 
