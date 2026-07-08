@@ -1,6 +1,14 @@
 # Workshop Step Verification Tests
 
-These PHPUnit tests verify that each step in [`WORKSHOP.md`](../WORKSHOP.md) has been applied correctly. They perform static source inspection of the plugin files — no WordPress runtime is required, so they run quickly with any PHP 8.1+ install on the workshop attendee's machine.
+These PHPUnit tests verify that each step in [`WORKSHOP.md`](../WORKSHOP.md) has been applied correctly. Most steps are checked by static source inspection of the plugin files, but the suite is designed to run against the plugin **installed inside a running [WordPress Studio](https://developer.wordpress.com/studio/) site** — that is the supported environment for the workshop.
+
+## Requirements
+
+- **The plugin must be installed inside a WordPress Studio site**, at the usual `.../wp-content/plugins/wp-ai-workshop-demo` location. The suite derives the site path from the plugin's directory (three levels up), so this layout is assumed.
+- **The Studio site should be running, with the [Studio CLI](https://developer.wordpress.com/docs/developer-tools/studio/studio-cli/) available** on your `PATH`. The runtime checks in **Step 0** (plugin active, AI Connector configured) shell out to `studio wp`, and **Step 3** probes the site's REST API over HTTP.
+- **PHP 8.1+** to run PHPUnit itself.
+
+The static source-inspection tests (Steps 1, 2, 4–10) will still run on any PHP 8.1+ machine, and the Studio-dependent checks (Steps 0 and 3) are *skipped* rather than failed when Studio is unavailable — but a run outside Studio only partially verifies the workshop. For full verification, run the suite against your Studio site.
 
 ## Running the tests
 
