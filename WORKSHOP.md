@@ -442,6 +442,10 @@ Then add the post-creation and featured-image helpers:
 ```php
 /**
  * Create a draft post and set its featured image from an image URL.
+ *
+ * @param string $title The Post title.
+ * @param string $content The Post content.
+ * @param string $image_url The external image url.
  */
 function wp_ai_workshop_demo_create_post( $title, $content, $image_url ) {
 	$post_id = wp_insert_post(
@@ -474,15 +478,18 @@ function wp_ai_workshop_demo_create_post( $title, $content, $image_url ) {
 /**
  * Sideload an image from a URL into the media library and set it as the
  * featured image for a post.
+ *
+ * @param string $post_id ID of the Post.
+ * @param string $image_url URL of the external image.
  */
 function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url ) {
-    // Verify that the image_url is a valid url, just to be safe.
-    if ( ! wp_http_validate_url( $image_url ) ) {
-        return new WP_Error( 'invalid_url', 'Image URL failed validation.' );
-    }
-      
-    // The media_sideload_image() function is typically only used in the admin context
-    // This ensures that it can be used outside the admin context, such as in a REST API request or MCP tool.
+	// Verify that the image_url is a valid url, just to be safe.
+	if ( ! wp_http_validate_url( $image_url ) ) {
+		return new WP_Error( 'invalid_url', 'Image URL failed validation.' );
+	}
+
+	// The media_sideload_image() function is typically only used in the admin context
+	// This ensures that it can be used outside the admin context, such as in a REST API request or MCP tool.
 	if ( ! function_exists( 'media_sideload_image' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -555,7 +562,7 @@ First, add `useEffect` to the `@wordpress/element` import:
 import { useState, useEffect, useCallback } from '@wordpress/element';
 ```
 
-Then, inside the `SettingsPage` component, add this `useEffect` after the `useState` declarations (after the `input` state). On mount it asks the AI Client for a single encouraging sentence and shows it in the notice:
+Then, inside the `SettingsPage` component, add this `useEffect` after all the variable declarations. On mount it asks the AI Client for a single encouraging sentence and shows it in the notice:
 
 ```js
     useEffect( () => {

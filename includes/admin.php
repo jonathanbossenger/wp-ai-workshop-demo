@@ -52,7 +52,8 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
 
 	// TODO: Enqueue the wp-ai-client and abilities scripts.
 
-    wp_enqueue_script_module(
+	// TODO: Update the plugin's script to be enqueued as a module, and add the abilities script module as a dependency
+    wp_enqueue_script(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
         array(),

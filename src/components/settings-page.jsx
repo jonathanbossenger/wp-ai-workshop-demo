@@ -10,6 +10,8 @@ import {
 import { useState, useCallback } from '@wordpress/element';
 import { DataForm } from '@wordpress/dataviews/wp';
 
+// TODO import getAbility and executeAbility and create the ABILITY constant
+
 const SettingsTitle = () => {
     return (
         <Heading level={ 1 }>
@@ -64,6 +66,8 @@ const SettingsPage = () => {
     const generateForm = {
         fields: [ 'image_url', 'prompt' ],
     };
+
+    // TODO add welcome message effect
 
     const updateNotice = ( message, status = 'info' ) => {
         setNoticeMessage( message );
