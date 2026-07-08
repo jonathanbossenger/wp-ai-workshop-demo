@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 8 — Create a Post from a Photo (Orchestration).
+ * Step 6 — Create a Post from a Photo (Orchestration).
  *
  * Verifies includes/post.php implements the `create-post-from-photo`
  * orchestrator callback. It demonstrates ability composition: it executes
@@ -15,7 +15,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step08CreatePostFromPhotoTest extends WorkshopTestCase {
+final class Step06CreatePostFromPhotoTest extends WorkshopTestCase {
 
 	private const FILE          = 'includes/post.php';
 	private const ORCHESTRATOR  = 'wp_ai_workshop_demo_create_post_from_photo';

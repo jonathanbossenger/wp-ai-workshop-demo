@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 5 — Enqueue WP AI Client and Abilities Scripts.
+ * Step 7 — Enqueue WP AI Client and Abilities Scripts.
  *
  * Verifies includes/admin.php enqueues the wp-ai-client script and the
  * @wordpress/core-abilities script module, and that the plugin's own
@@ -13,7 +13,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step05EnqueueScriptsTest extends WorkshopTestCase {
+final class Step07EnqueueScriptsTest extends WorkshopTestCase {
 
 	private const FILE = 'includes/admin.php';
 	private const FN   = 'wp_ai_workshop_demo_admin_enqueue_scripts';

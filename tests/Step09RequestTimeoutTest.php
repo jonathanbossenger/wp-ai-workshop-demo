@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 10 — Increase the AI Client request timeout.
+ * Step 9 — Increase the AI Client request timeout.
  *
  * Verifies includes/ai-client.php defines wp_ai_workshop_demo_set_request_timeout()
  * returning an integer timeout, and that wp-ai-workshop-demo.php hooks it into the
@@ -13,7 +13,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step10RequestTimeoutTest extends WorkshopTestCase {
+final class Step09RequestTimeoutTest extends WorkshopTestCase {
 
 	private const CLIENT_FILE = 'includes/ai-client.php';
 	private const PLUGIN_FILE = 'wp-ai-workshop-demo.php';

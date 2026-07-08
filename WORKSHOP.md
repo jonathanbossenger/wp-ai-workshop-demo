@@ -542,16 +542,6 @@ Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script'
 
 **File:** `src/components/settings-page.jsx`
 
-Import the Abilities API near the top of the file:
-
-```js
-const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
-
-const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
-```
-
-> **Key point:** The `webpackIgnore: true` comment tells webpack/wp-scripts not to try to bundle this import, due to the way it's provided by WordPress. There's an open issue to fix this issue in wp-scripts here: https://github.com/WordPress/gutenberg/pull/76397
-
 ### Add an AI welcome message
 
 Use the AI Client to greet the user with a short, AI-generated message when the settings page loads.
@@ -579,6 +569,16 @@ Then, inside the `SettingsPage` component, add this `useEffect` after all the va
 ```
 
 ### Generate a post via the Ability
+
+Import the Abilities API near the top of the file:
+
+```js
+const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
+
+const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
+```
+
+> **Key point:** The `webpackIgnore: true` comment tells webpack/wp-scripts not to try to bundle this import, due to the way it's provided by WordPress. There's an open issue to fix this issue in wp-scripts here: https://github.com/WordPress/gutenberg/pull/76397
 
 The component already renders an **Image URL** field and an optional **angle/tone** field. Replace the `// TODO: Use the Abilities API to execute the 'wp-ai-workshop-demo/create-post-from-photo' ability.` comment in `generateFromInput` with the ability call:
 

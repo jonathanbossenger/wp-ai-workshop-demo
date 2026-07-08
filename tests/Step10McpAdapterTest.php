@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 11 — Install and try the MCP Adapter.
+ * Step 10 — Install and try the MCP Adapter.
  *
  * The workshop step has two parts:
  *   1. Each ability's meta exposes it via MCP ('mcp' => array( 'public' => true )).
@@ -17,7 +17,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step11McpAdapterTest extends WorkshopTestCase {
+final class Step10McpAdapterTest extends WorkshopTestCase {
 
 	private const FILE = 'includes/abilities.php';
 
