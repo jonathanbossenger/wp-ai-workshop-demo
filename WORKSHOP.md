@@ -559,7 +559,7 @@ Then, inside the `SettingsPage` component, add this `useEffect` after all the va
         async function loadInstructionsMessage() {
             let prompt = '';
             prompt += 'A simple sentence encouraging the user to create a WordPress Post from a photo using AI. ';
-            prompt =+ 'The user can paste an image URL and (optionally) an angle/tone to generate the post. ';
+            prompt += 'The user can paste an image URL and (optionally) an angle/tone to generate the post. ';
             prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
             const text = await wp.aiClient.prompt( prompt ).generateText();
             setNoticeMessage( text );
@@ -657,9 +657,9 @@ add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_req
 
 ---
 
-## 10. Expose the abilities via the MCP Adapter
+## 10. Expose an Ability via the MCP Adapter
 
-Update each Ability's registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
+Update the `wp-ai-workshop-demo/create-post-from-photo` Ability registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
 
 ```php
 'meta' => array(
@@ -670,7 +670,7 @@ Update each Ability's registration to include the `mcp` meta, which exposes it t
 ),
 ```
 
-These Abilities can now be adapted to MCP Tools, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
+This Ability can now be adapted to an MCP Tool, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
 
 - Install the [MCP Adapter](https://github.com/WordPress/mcp-adapter/releases) plugin.
 - Create an Application Password for an admin user.
