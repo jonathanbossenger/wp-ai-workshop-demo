@@ -56,8 +56,9 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
     wp_enqueue_script(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
-        array(),
+        $asset_file['dependencies'],
         $asset_file['version'],
+        true
     );
 
 	wp_enqueue_style(
