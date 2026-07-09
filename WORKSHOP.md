@@ -507,23 +507,21 @@ function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url )
 }
 ```
 
-## 7. Enqueue the WP AI Client and Abilities scripts
+## 7. Enqueue the Abilities module as a dependency of the plugin's script module
 
 https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
 
 **File:** `includes/admin.php`
 
-The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
+The plugin already enqueues its own script (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you enqueue the **`@wordpress/core-abilities`** script module that the form depends, update the plugin script to be enqueued as a script module (so it works properly with `@wordpress/core-abilities`) and make `@wordpress/core-abilities` a dependency of the plugin's script module.
 
-First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
+First, replace the `// TODO: Enqueue the Abilities script module.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
 
 ```php
-    wp_enqueue_script( 'wp-ai-client' );
-
     wp_enqueue_script_module( '@wordpress/core-abilities' );
 ```
 
-Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
+Then update the existing `wp_enqueue_script( 'wp-ai-workshop-demo-script', … )` call to enqueue it as a script module, and declare `@wordpress/core-abilities` as a dependency:
 
 ```php
     wp_enqueue_script_module(
@@ -536,37 +534,9 @@ Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script'
 
 ---
 
----
-
 ## 8. Build the Settings Page form
 
 **File:** `src/components/settings-page.jsx`
-
-### Add an AI welcome message
-
-Use the AI Client to greet the user with a short, AI-generated message when the settings page loads.
-
-First, add `useEffect` to the `@wordpress/element` import:
-
-```js
-import { useState, useEffect, useCallback } from '@wordpress/element';
-```
-
-Then, inside the `SettingsPage` component, add this `useEffect` after all the variable declarations. On mount it asks the AI Client for a single encouraging sentence and shows it in the notice:
-
-```js
-    useEffect( () => {
-        async function loadInstructionsMessage() {
-            let prompt = '';
-            prompt += 'A simple sentence encouraging the user to create a WordPress Post from a photo using AI. ';
-            prompt += 'The user can paste an image URL and (optionally) an angle/tone to generate the post. ';
-            prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
-            const text = await wp.aiClient.prompt( prompt ).generateText();
-            setNoticeMessage( text );
-        }
-        loadInstructionsMessage();
-    }, [] );
-```
 
 ### Generate a post via the Ability
 

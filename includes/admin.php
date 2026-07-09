@@ -48,10 +48,9 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
 		return;
 	}
 
+    // TODO: Enqueue the Abilities script module.
+
 	$asset_file = include plugin_dir_path( __DIR__ ) . 'build/index.asset.php';
-
-	// TODO: Enqueue the wp-ai-client and abilities scripts.
-
 	// TODO: Update the plugin's script to be enqueued as a module, and add the abilities script module as a dependency
     wp_enqueue_script(
         'wp-ai-workshop-demo-script',
