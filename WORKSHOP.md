@@ -543,6 +543,8 @@ Then update the existing `wp_enqueue_script( 'wp-ai-workshop-demo-script', … )
 Import the Abilities API near the top of the file:
 
 ```js
+const { ready } = await import( /* webpackIgnore: true */ '@wordpress/core-abilities' );
+await ready;
 const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
 const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
