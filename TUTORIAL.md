@@ -2,9 +2,9 @@
 
 The last two major WordPress releases have included important new features for developers wanting to explore AI in the context of WordPress:
 
-* **The [Abilities API](https://make.wordpress.org/core/2025/11/10/abilities-api-in-wordpress-6-9/)** — a standard way to register a unit of functionality so that *anything* (REST, the block editor, an AI agent) can discover and run it.
-* **The [WordPress AI Client](https://github.com/WordPress/php-ai-client)** — a provider-agnostic PHP library for talking to AI models, so your code doesn't care whether you're using OpenAI, Anthropic, or Google.
-* **The [MCP Adapter](https://github.com/WordPress/mcp-adapter)** — which exposes abilities as MCP tools, so an AI agent in a desktop app can call them.
+* The **[Abilities API](https://make.wordpress.org/core/2025/11/10/abilities-api-in-wordpress-6-9/)** — a standard way to register a unit of functionality so that *anything* (REST, the block editor, another developer, an AI agent) can discover and run it.
+* The **[WordPress AI Client](https://github.com/WordPress/php-ai-client)** — a provider-agnostic PHP library for interacting with any AI model, so your code doesn't care which AI provider is available.
+* The **[MCP Adapter](https://github.com/WordPress/mcp-adapter)** — which exposes Abilities as MCP tools, so an AI agent (desktop or cloud-based) can use them.
 
 So far, you’ve probably read multiple tutorials on how to use each of these separately. We’ve even covered each of them on the WordPress developer blog:
 
@@ -36,7 +36,7 @@ The interesting part isn't *what* it does, though. It's *how* it's built. Under 
 | `generate-post-from-description` | Description → post title \+ content | Text generation |
 | `create-post-from-photo` | Orchestrates the two above, then creates the post | No AI in this one, but it orchestrates the others |
 
-That third ability is the one I'm most excited about, because it demonstrates **ability composition** — one ability calling other abilities via `WP_Ability::execute()`. More on that later.
+That third ability is an example of **ability composition** — one ability calling other abilities via `WP_Ability::execute()`. This is one of the more exciting aspects of the Abilities API compared to traditional methods of building functionality in WordPress.
 
 ## Before you start
 
@@ -46,34 +46,32 @@ To be able to run the code for this tutorial, you’re going to need a few thing
 * The latest version of [Composer](https://getcomposer.org/) and [Node.js](https://nodejs.org/en) is installed
 * API credentials for an AI provider that supports a vision-capable model (more on this later)
 
-To make life easier (and this tutorial shorter), you’ll be building on top of a starter plugin available here: [https://github.com/wptrainingteam/wp-ai-workshop-demo/releases](https://github.com/wptrainingteam/wp-ai-workshop-demo/releases).
+To make life easier (and this tutorial shorter), you’ll be building on top of a starter plugin available here: [https://github.com/wptrainingteam/wp-ai-workshop-demo/releases](https://github.com/wptrainingteam/wp-ai-workshop-demo/releases). This plugin already contains the foundation of the feature set, so you can just build out the AI functionality.
 
-Download the latest version of the plugin (1.1.1), install and activate it in your local WordPress development environment.
+Download the latest version of the plugin ([1.1.1](https://github.com/wptrainingteam/wp-ai-workshop-demo/releases/tag/1.1.1)), install and activate it in your local WordPress development environment.
 
-Once it’s activated, the plugin adds a new admin page under **Tools** called **WP AI Workshop Demo**, which displays a form for managing the Photo to Post process.
-
-![][image1]
+Once activated, the plugin adds a new admin page under **Tools** called **WP AI Workshop Demo**, which displays a form for managing the Photo to Post process.
 
 It uses the [WordPress DataForm package](https://developer.wordpress.org/news/2026/01/how-to-use-dataform-to-create-plugin-settings-pages/) to render the form, but currently doesn’t provide any functionality.
 
 Since we're going to be building out the functionality of this tutorial, it'll be helpful to install the composer and npm dependencies now. Inside the plugin directory, run:
 
-```bash
+```shell
 composer install
 npm install
 ```
 
-Open up the main plugin file, `wp-ai-workshop-demo.php`, and you’ll see a couple of comments marked as TODO, like this one on line 29:
+Open up the main plugin file, `wp-ai-workshop-demo.php`, and you’ll see a couple of comments marked as `TODO`, like this one on line 29:
 
 ```
 // TODO: Register the ability category and the three Photo to Post ability hooks.
 ```
 
-This indicates the different areas around the plugin where you’ll build out the functionality. Every time this tutorial asks you to add some code, look for the specific TODO to replace.
+This indicates the different areas around the plugin where you’ll build out the functionality. Every time this tutorial asks you to add some code in a file, look for the specific `TODO` to replace.
 
 ## Connecting your site to your AI provider
 
-In order to make it possible for your WordPress site to make use of generative AI functionality via the AI Client, in this case, the process of reading the photo, generating its description, and then generating the post content, you need to connect it to an AI provider.
+To enable your WordPress site to use generative AI via the AI Client, you need to connect it to an AI provider. In this case, the process of reading the photo, generating its description, and then generating the post content all use the AI Client.
 
 Since WordPress 7.0, this is possible via the [new Connectors screen](https://make.wordpress.org/core/2026/05/14/wordpress-7-0-field-guide/#ai-connectors-screen). Powered by the [Connectors API](https://make.wordpress.org/core/2026/03/18/introducing-the-connectors-api-in-wordpress-7-0/), the Connectors screen provides a WordPress site admin with a single interface for storing external API keys.
 
@@ -82,17 +80,19 @@ Previously, any plugin that added an external connection to WordPress required a
 * Akismet for anti-spam
 * Mailchimp for WordPress for adding Mailchimp email support
 * Site Kit by Google for Google Analytics information
-* WooCommerce payment gateway extensions (e.g., Stripe, PayPal, [Authorize.net](http://Authorize.net))
+* WooCommerce payment gateway extensions (e.g., Stripe, PayPal, Authorize.net)
 
-Plugin developers typically had to manage storing the API key themselves, usually on a Settings page. So if you had 4 different plugins that stored API keys, that meant you had 4 different places to manage them.
+Plugin developers typically had to manage storing the API key themselves, usually on a separate Settings page. So if you had 4 different plugins that stored API keys, that meant you had 4 different places to manage them.
 
 The Connectors API and screen bring all that information into one place. Developers can register a Connector for the service their plugin provides, and the Connector appears on the Connectors page, where users can enter and store their API key.
 
-In the context of AI providers, plugins exist to support the three major frontier providers: **OpenAI**, **Anthropic**, and **Google.** From the Connectors page, you can install the plugin for the provider of your choice
+In the context of AI providers, plugins exist to support the three major frontier providers: [**OpenAI**](https://wordpress.org/plugins/ai-provider-for-openai/), [**Anthropic**](https://wordpress.org/plugins/ai-provider-for-anthropic/), and [**Google**](https://wordpress.org/plugins/ai-provider-for-google/)**.** From the Connectors page, you can install the plugin for the provider of your choice
 
 Once installed, you can enter and save the API key to enable the AI Client functionality.
 
-If you prefer to use AI models other than those from OpenAI, Anthropic, or Google, plugins exist for several other providers, including [Ollama](https://wordpress.org/plugins/ai-provider-for-ollama/), [OpenRouter](https://wordpress.org/plugins/ai-provider-for-openrouter/), and [Mistral](https://wordpress.org/plugins/ai-provider-for-mistral/). Just make sure your provider uses a **vision-capable** model for the functionality you’ll build in this tutorial**.**
+![][image3]
+
+If you prefer to use AI models other than those from OpenAI, Anthropic, or Google, plugins exist for several other providers, including [Ollama](https://wordpress.org/plugins/ai-provider-for-ollama/), [OpenRouter](https://wordpress.org/plugins/ai-provider-for-openrouter/), and [Mistral](https://wordpress.org/plugins/ai-provider-for-mistral/). Just make sure your provider uses a **vision-capable** model for the functionality you’ll build in this tutorial.
 
 ## Building the plugin functionality
 
@@ -159,106 +159,106 @@ The `generate-post-from-description` and `create-post-from-photo` abilities foll
 First, the `wp_ai_workshop_demo_register_generate_post_from_description_ability` function:
 
 ```php
-	wp_register_ability(
-		'wp-ai-workshop-demo/generate-post-from-description',
-		array(
-			'label'               => __( 'Generate post copy from a description', 'wp-ai-workshop-demo' ),
-			'description'         => __( 'Given a description (and optional tone/angle), generate a WordPress post title and body content.', 'wp-ai-workshop-demo' ),
-			'category'            => 'wp-ai-workshop-demo',
-			'input_schema'        => array(
-				'type'       => 'object',
-				'properties' => array(
-					'description' => array(
-						'type'        => 'string',
-						'description' => 'The source description to base the post on.',
-					),
-					'prompt'      => array(
-						'type'        => 'string',
-						'description' => 'Optional tone, angle, or extra guidance for the post.',
-					),
+wp_register_ability(
+	'wp-ai-workshop-demo/generate-post-from-description',
+	array(
+		'label'               => __( 'Generate post copy from a description', 'wp-ai-workshop-demo' ),
+		'description'         => __( 'Given a description (and optional tone/angle), generate a WordPress post title and body content.', 'wp-ai-workshop-demo' ),
+		'category'            => 'wp-ai-workshop-demo',
+		'input_schema'        => array(
+			'type'       => 'object',
+			'properties' => array(
+				'description' => array(
+					'type'        => 'string',
+					'description' => 'The source description to base the post on.',
 				),
-				'required'   => array( 'description' ),
-			),
-			'output_schema'       => array(
-				'type'       => 'object',
-				'properties' => array(
-					'title'   => array(
-						'type'        => 'string',
-						'description' => 'The generated post title.',
-					),
-					'content' => array(
-						'type'        => 'string',
-						'description' => 'The generated post content in Block Editor markup.',
-					),
+				'prompt'      => array(
+					'type'        => 'string',
+					'description' => 'Optional tone, angle, or extra guidance for the post.',
 				),
-				'required'   => array( 'title', 'content' ),
 			),
-			'execute_callback'    => 'wp_ai_workshop_demo_generate_post_from_description',
-			'permission_callback' => function () {
-				return current_user_can( 'edit_posts' );
-			},
-			'meta'                => array(
-				'show_in_rest' => true,
+			'required'   => array( 'description' ),
+		),
+		'output_schema'       => array(
+			'type'       => 'object',
+			'properties' => array(
+				'title'   => array(
+					'type'        => 'string',
+					'description' => 'The generated post title.',
+				),
+				'content' => array(
+					'type'        => 'string',
+					'description' => 'The generated post content in Block Editor markup.',
+				),
 			),
-		)
-	);
+			'required'   => array( 'title', 'content' ),
+		),
+		'execute_callback'    => 'wp_ai_workshop_demo_generate_post_from_description',
+		'permission_callback' => function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'meta'                => array(
+			'show_in_rest' => true,
+		),
+	)
+);
 ```
 
 Followed by the `wp_ai_workshop_demo_register_create_post_from_photo_ability` function:
 
 ```php
-	wp_register_ability(
-		'wp-ai-workshop-demo/create-post-from-photo',
-		array(
-			'label'               => __( 'Create a post from a photo via AI', 'wp-ai-workshop-demo' ),
-			'description'         => __( 'Given an image URL, describe the image, write a post about it, and create a draft post using the image as the featured image.', 'wp-ai-workshop-demo' ),
-			'category'            => 'wp-ai-workshop-demo',
-			'input_schema'        => array(
-				'type'       => 'object',
-				'properties' => array(
-					'image_url' => array(
-						'type'        => 'string',
-						'description' => 'The URL of the image to turn into a post.',
-					),
-					'prompt'    => array(
-						'type'        => 'string',
-						'description' => 'Optional tone, angle, or extra guidance for the post.',
-					),
+wp_register_ability(
+	'wp-ai-workshop-demo/create-post-from-photo',
+	array(
+		'label'               => __( 'Create a post from a photo via AI', 'wp-ai-workshop-demo' ),
+		'description'         => __( 'Given an image URL, describe the image, write a post about it, and create a draft post using the image as the featured image.', 'wp-ai-workshop-demo' ),
+		'category'            => 'wp-ai-workshop-demo',
+		'input_schema'        => array(
+			'type'       => 'object',
+			'properties' => array(
+				'image_url' => array(
+					'type'        => 'string',
+					'description' => 'The URL of the image to turn into a post.',
 				),
-				'required'   => array( 'image_url' ),
-			),
-			'output_schema'       => array(
-				'type'       => 'object',
-				'properties' => array(
-					'message' => array(
-						'type'        => 'string',
-						'description' => 'A status message describing the result.',
-					),
-					'post_id' => array(
-						'type'        => 'integer',
-						'description' => 'The ID of the newly created post.',
-					),
+				'prompt'    => array(
+					'type'        => 'string',
+					'description' => 'Optional tone, angle, or extra guidance for the post.',
 				),
-				'required'   => array( 'message' ),
 			),
-			'execute_callback'    => 'wp_ai_workshop_demo_create_post_from_photo',
-			'permission_callback' => function () {
-				return current_user_can( 'edit_posts' );
-			},
-			'meta'                => array(
-				'show_in_rest' => true,
+			'required'   => array( 'image_url' ),
+		),
+		'output_schema'       => array(
+			'type'       => 'object',
+			'properties' => array(
+				'message' => array(
+					'type'        => 'string',
+					'description' => 'A status message describing the result.',
+				),
+				'post_id' => array(
+					'type'        => 'integer',
+					'description' => 'The ID of the newly created post.',
+				),
 			),
-		)
-	);
+			'required'   => array( 'message' ),
+		),
+		'execute_callback'    => 'wp_ai_workshop_demo_create_post_from_photo',
+		'permission_callback' => function () {
+			return current_user_can( 'edit_posts' );
+		},
+		'meta'                => array(
+			'show_in_rest' => true,
+		),
+	)
+);
 ```
 
 The key thing to internalize here is the Ability shape: **label, description, schemas, permission, callback.** Once it clicks, you'll be registering abilities in your sleep.
 
-So why bother describing everything so formally? Because the `label`, `description`, `input_schema,` and `output_schema` are what let the REST API, other developers, and AI agents all understand your ability without you writing any other code. You describe it once; everything that wants to use it instantly understands what it’s called, what it does, what inputs it expects, and what outputs it will return.
+So why bother describing everything so formally? The `label`, `description`, `input_schema,`and `output_schema` are what let the REST API, other developers, and AI agents all understand your ability without you writing any additional code. You describe it once; everything that wants to use it instantly understands what it’s called, what it does, what inputs it expects, and what outputs it will return.
 
 ## Step 2: Hook the abilities in
 
-Ability registration is happens via dedicated action hooks, specifically `wp_abilities_api_categories_init` and `wp_abilities_api_init`.
+Like most things in WordPress, Ability registration occurs via dedicated action hooks: `wp_abilities_api_categories_init` and `wp_abilities_api_init`.
 
 In the main plugin file, `wp-ai-workshop-demo.php`, wire up the functions from the `includes/abilities.php` file to the relevant hook:
 
@@ -281,7 +281,7 @@ curl -u 'USERNAME:APPLICATION_PASSWORD' https://yoursite.local/wp-json/wp-abilit
 
 You should see a JSON response which includes the three core WordPress abilities, followed by your three `wp-ai-workshop-demo/*` abilities.
 
-This is incredibly reassuring as a checkpoint. You haven't written any AI generation code for these Abilities yet, but you already have three discoverable, schema-described endpoints. That's the foundation on which everything else is built.
+This is incredibly reassuring as a checkpoint. You haven't written any internal functionality for these Abilities yet, but you already have three discoverable, schema-described endpoints.
 
 ## Step 4: Describe the image (your first AI call)
 
@@ -321,7 +321,9 @@ return array(
 
 Look at how readable that AI Client call is. `wp_ai_client_prompt()` gives you a fluent builder: add your prompt text, attach a file, ask for text back. And because the AI Client is provider-agnostic, this exact code works whether the user configured OpenAI, Anthropic, or Google.
 
-You'll also need to add the helper, `wp_ai_workshop_demo_image_url_to_data_uri()` function. This fetches the remote image with `wp_remote_get()` and base64-encodes it into a data URI to send to the AI model.
+You'll also need to add the `wp_ai_workshop_demo_image_url_to_data_uri()` helper function. This fetches the remote image with `wp_remote_get()` and base64-encodes it into a data URI to send to the AI model.
+
+**Information:** Generally, developers like to put helper functions like this in a separate file in the plugin. For the purposes of this tutorial, you can just add any helper functions at the bottom of the relevant file.
 
 ```php
 /**
@@ -409,7 +411,7 @@ return array(
 );
 ```
 
-You'll also add a `wp_ai_workshop_demo_decode_json_response()` helper that deliberately strips any markdown code fences the model might wrap around the JSON before decoding.
+You'll also add a `wp_ai_workshop_demo_decode_json_response()` helper function that deliberately strips any markdown code fences the model might wrap around the JSON before decoding.
 
 ````php
 /**
@@ -484,7 +486,7 @@ return wp_ai_workshop_demo_create_post(
 );
 ```
 
-Do you see what's happening? `wp_get_ability()` fetches an ability by name, and `->execute()` runs it. Your orchestrator never touches the AI Client directly; it just composes two abilities that already know how to do their jobs, then hands off to a `wp_ai_workshop_demo_create_post()` helper that calls `wp_insert_post()` to create the post and sideloads the featured image with `media_sideload_image()`. Now would be a good time to add these helper functions.
+Do you see what's happening? `wp_get_ability()` fetches an ability by name, and `->execute()` runs it. Your orchestrator never touches the AI Client directly; it just composes two abilities that already know how to do their jobs, then hands off to a `wp_ai_workshop_demo_create_post()` helper that calls `wp_insert_post()` to create the post and sideloads the featured image with `media_sideload_image()`helper. Now would be a good time to add these helper functions.
 
 ```php
 /**
@@ -560,67 +562,40 @@ This is one of the greatest things about Abilities. Once your functionality is e
 
 At this point, you’ve completed most of the core plugin functionality. Now we just need to make it available to the site owner. As mentioned earlier, the plugin ships with a settings page, so we need to connect it to the Abilities we just registered.
 
-The first step is to enqueue the two scripts the form depends on in `includes/admin.php`:
+The first step is to enqueue the Abilities script module in `includes/admin.php`:
 
 ```php
-wp_enqueue_script( 'wp-ai-client' );
 wp_enqueue_script_module( '@wordpress/core-abilities' );
 ```
 
-* The wp-ai-client script enables the AI Client’s JavaScript API. You’ll use this in the form to show an AI-generated message to the user.
-* The `@wordpress/core-abilities` enqueues the Abilities JavaScript API. You’ll use this to find and execute the Abilities you registered in PHP.
+`@wordpress/core-abilities` enqueues everything you need to find and execute the Abilities you registered in PHP in JavaScript.
 
-Next, you need to update the plugin’s own script enqueuing to load it as a script module, which depends on `@wordpress/core-abilities`:
+Next, you need to update the plugin’s own script enqueuing to load it as a script module, and add the dependency on `@wordpress/core-abilities`:
 
 ```javascript
-   wp_enqueue_script_module(
-        'wp-ai-workshop-demo-script',
-        plugins_url( 'build/index.js', __DIR__ ),
-        array( '@wordpress/core-abilities' ),
-        $asset_file['version'],
-    );
+wp_enqueue_script_module(
+	'wp-ai-workshop-demo-script',
+	plugins_url( 'build/index.js', __DIR__ ),
+	array( '@wordpress/core-abilities' ),
+	$asset_file['version'],
+);
 ```
-
 
 Now open the file `src/components/settings-page.jsx`, where you’ll update the settings page interface.
 
-Before implementing the photo-to-post functionality, update the welcome message to use the AI Client to greet the user with a short, AI-generated message when the settings page loads. You’ll implement this via a useEffect hook.
-
-First, add \`useEffect\` to the \`@wordpress/element\` import:
+Step one is to import `ready` promise from the `@wordpress/abilities` package. This is a [recent update](https://github.com/WordPress/gutenberg/pull/77254) that ensures the Abilities REST API endpoints are loaded before any modules attempt to interact with them. Next, import the `getAbility` and `executeAbility` functions from the `@wordpress/abilities` package. This allows you to get and execute your registered Abilities. At the same time, you can create a constant that holds the name of the `create-post-from-photo` Ability.
 
 ```javascript
-import { useState, useEffect, useCallback } from '@wordpress/element';
-```
-
-Then, inside the `SettingsPage` component, add the `useEffect` after the variable declarations:
-
-```javascript
-   useEffect( () => {
-        async function loadInstructionsMessage() {
-            let prompt = '';
-            prompt += 'A simple sentence encouraging the user to create a WordPress Post from a photo using AI. ';
-            prompt += 'The user can paste an image URL and (optionally) an angle/tone to generate the post. ';
-            prompt += 'Only return the actual sentence. Do not include any additional text or formatting.';
-            const text = await wp.aiClient.prompt( prompt ).generateText();
-            setNoticeMessage( text );
-        }
-        loadInstructionsMessage();
-    }, [] );
-```
-
-Now we can move on to the core plugin functionality.
-
-Step one is to import the `getAbility` and `executeAbility` functions from the `@wordpress/abilities` package. This allows you to get and execute your registered Abilities. At the same time, you can create a constant that holds the name of the `create-post-from-photo` Ability.
-
-```javascript
+const { ready } = await import( /* webpackIgnore: true */ '@wordpress/core-abilities' );
+await ready;
 const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
 const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
 ```
 
-**Heads up:** that `/* webpackIgnore: true */` comment matters. It tells `wp-scripts` not to try to bundle the import, because WordPress provides it at runtime. There's an [open PR in Gutenberg](https://github.com/WordPress/gutenberg/pull/76397) to smooth this over, but for now, the comment is what keeps the build happy.
+**Heads up:** note the `/* webpackIgnore: true */` comment. It tells `wp-scripts` not to bundle the import during its build step because WordPress provides it at runtime. There's an [open PR in Gutenberg](https://github.com/WordPress/gutenberg/pull/76397) to fix this in `wp-scripts`, but for now, the comment is what keeps the build happy.
 
-Then, inside the `generateFromInput` function, ese the Abilities JavaScript API to execute the `create-post-from-photo` ability.
+Then, inside the `generateFromInput` function, use the Abilities JavaScript API to execute the `create-post-from-photo` ability.
 
 ```javascript
        const ability = getAbility( ABILITY );
@@ -660,7 +635,7 @@ Then, inside the `generateFromInput` function, ese the Abilities JavaScript API 
 
 The key detail to focus on here is that, just like in PHP, you get an Ability by its name, check that it’s valid, and then execute it with the required inputs. No additional code is needed to perform the same action in both PHP and JavaScript.
 
-In your terminal, run `npm run build` to rebuild the assets.
+In your terminal, run `npm run build` inside the plugin directory to rebuild the assets.
 
 Then head to **Tools → WP AI Workshop Demo**, paste in an image URL, and click **Generate Post**. The *same ability* you tested over `curl` is now driving a dashboard UI. Write once, use everywhere.
 
@@ -668,10 +643,17 @@ Then head to **Tools → WP AI Workshop Demo**, paste in an image URL, and click
 
 Photo to Post makes two AI calls in a row and then sideloads an image, so a single request can easily run longer than WordPress's default HTTP timeout. Fortunately, the AI Client exposes a filter for increasing the timeout value:
 
+Start by adding the callback function to `includes/ai-client.php` to update the timeout
+
 ```php
 function wp_ai_workshop_demo_set_request_timeout() {
 	return 120;
 }
+```
+
+Then, back in the main plugin file, `wp-ai-workshop-demo.php`, wire up the function to the filter, as you did for the Ability hooks.
+
+```php
 add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_request_timeout' );
 ```
 
@@ -681,7 +663,7 @@ This is one of those things you don't think about until your first real request 
 
 Here's where it gets a little bit magical. We've got abilities that work over REST and in the dashboard. With one small change, they can also be driven by an AI agent in a desktop app.
 
-Inside the `wp-ai-workshop-demo/create-post-from-photo` Ability registration, update `mcp` meta array to add support for MCP.
+Inside the `wp-ai-workshop-demo/create-post-from-photo` Ability registration, update the meta array to add support for MCP.
 
 ```php
 'meta' => array(
@@ -716,14 +698,10 @@ Using the same Application Password you created earlier, you can configure your 
 
 Now ask your MCP client to *"create a post from this photo"* with an image URL — and watch it discover and call your `create-post-from-photo` ability all on its own. The same ability. Three different front doors: REST, the dashboard, and an AI agent. We never wrote separate code for any of them.
 
-## So what did we actually learn?
+## Wrap up
 
-When I think back to that question I asked at the start — *what does it take to build a genuinely useful AI feature into WordPress?* — the answer turned out to be more reassuring than I expected.
+One of the great things about building on top of the WordPress Core AI projects is that you don’t need to reinvent anything to add AI-powered features to your plugins.
 
-You don't need to reinvent anything. You register **abilities** that describe what your plugin can do. You let the **AI Client** handle the messy provider-specific details. You **compose** small abilities into bigger ones. And then REST, the block editor, and MCP agents all come along for the ride, for free.
-
-That's a pattern I think we'll be using for years. It feels a lot like the first time I really *got* hooks and filters — a small set of ideas that quietly change how you build everything afterwards.
-
-If you want to build along, the full plugin and a step-by-step `WORKSHOP.md` live at [`wptrainingteam/wp-ai-workshop-demo`](https://github.com/wptrainingteam/wp-ai-workshop-demo). Clone it, fill in the TODOs, and turn one of your photos into a post.
+You register **abilities** that describe what your plugin can do. You let the **AI Client** handle the messy provider-specific details. You **compose** small abilities into bigger ones. And then REST, the block editor, and MCP agents all come along for the ride, for free.
 
 And if you build something with it — or get gloriously stuck — I'd love to hear about it in the comments. That's the best part of putting these things out into the open. Now go and build your first AI-powered plugin. 🚀
