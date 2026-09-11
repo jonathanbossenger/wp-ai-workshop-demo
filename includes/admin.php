@@ -48,7 +48,9 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
 		return;
 	}
 
-	wp_enqueue_script( 'wp-ai-client' );
+	if ( ! function_exists( 'wp_enqueue_script_module' ) ) {
+		return;
+	}
 
 	wp_enqueue_script_module( '@wordpress/core-abilities' );
 
