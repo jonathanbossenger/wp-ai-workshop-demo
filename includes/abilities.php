@@ -81,6 +81,9 @@ function wp_ai_workshop_demo_register_describe_image_ability() {
 			},
 			'meta'                => array(
 				'show_in_rest' => true,
+				'mcp'          => array(
+					'public' => true,
+				),
 			),
 		)
 	);
@@ -135,6 +138,9 @@ function wp_ai_workshop_demo_register_generate_post_from_description_ability() {
 			},
 			'meta'                => array(
 				'show_in_rest' => true,
+				'mcp'          => array(
+					'public' => true,
+				),
 			),
 		)
 	);

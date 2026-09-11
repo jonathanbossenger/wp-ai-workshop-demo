@@ -507,21 +507,23 @@ function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url )
 }
 ```
 
-## 7. Enqueue the Abilities module as a dependency of the plugin's script module
+## 7. Enqueue the WP AI Client and Abilities scripts
 
 https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
 
 **File:** `includes/admin.php`
 
-The plugin already enqueues its own script (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you enqueue the **`@wordpress/core-abilities`** script module that the form depends, update the plugin script to be enqueued as a script module (so it works properly with `@wordpress/core-abilities`) and make `@wordpress/core-abilities` a dependency of the plugin's script module.
+The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
 
-First, replace the `// TODO: Enqueue the Abilities script module.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
+First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
 
 ```php
+    wp_enqueue_script( 'wp-ai-client' );
+
     wp_enqueue_script_module( '@wordpress/core-abilities' );
 ```
 
-Then update the existing `wp_enqueue_script( 'wp-ai-workshop-demo-script', … )` call to enqueue it as a script module, and declare `@wordpress/core-abilities` as a dependency:
+Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
 
 ```php
     wp_enqueue_script_module(
@@ -629,9 +631,9 @@ add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_req
 
 ---
 
-## 10. Expose an Ability via the MCP Adapter
+## 10. Expose the abilities via the MCP Adapter
 
-Update the `wp-ai-workshop-demo/create-post-from-photo` Ability registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
+Update each Ability registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
 
 ```php
 'meta' => array(
@@ -642,7 +644,7 @@ Update the `wp-ai-workshop-demo/create-post-from-photo` Ability registration to 
 ),
 ```
 
-This Ability can now be adapted to an MCP Tool, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
+These abilities can now be adapted to MCP Tools, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
 
 - Install the [MCP Adapter](https://github.com/WordPress/mcp-adapter/releases) plugin.
 - Create an Application Password for an admin user.
