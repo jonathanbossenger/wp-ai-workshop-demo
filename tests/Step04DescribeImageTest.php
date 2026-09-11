@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 6 — Describe an Image (Vision).
+ * Step 4 — Describe an Image (Vision).
  *
  * Verifies includes/vision.php implements the `describe-image` ability
  * callback using the WP AI Client's multimodal (vision) support: it fetches
@@ -14,7 +14,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step06DescribeImageTest extends WorkshopTestCase {
+final class Step04DescribeImageTest extends WorkshopTestCase {
 
 	private const FILE      = 'includes/vision.php';
 	private const FN        = 'wp_ai_workshop_demo_describe_image';

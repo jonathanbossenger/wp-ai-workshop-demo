@@ -27,7 +27,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 function wp_ai_workshop_demo_describe_image( $arguments ) {
 	$image_url = $arguments['image_url'];
 
-	// Vision-capable providers require inline image data, so convert the URL to a data URI.
+	// Vision-capable providers (e.g. Anthropic) require the image to be sent
+	// inline (base64), not as a remote URL, so fetch it and build a data URI.
+	// A data URI is also accepted by URL-friendly providers such as OpenAI,
+	// which keeps this ability portable across providers.
 	$data_uri = wp_ai_workshop_demo_image_url_to_data_uri( $image_url );
 	if ( is_wp_error( $data_uri ) ) {
 		return $data_uri;
@@ -37,6 +40,8 @@ function wp_ai_workshop_demo_describe_image( $arguments ) {
 	$prompt .= 'Focus on the main subject, the setting, the mood, notable colours, ';
 	$prompt .= 'and any details that would help someone write an engaging blog post about it.';
 
+	// generate_text() returns a string on success, or a WP_Error on failure
+	// (the AI Client's WordPress wrapper catches exceptions and returns WP_Error).
 	$description = wp_ai_client_prompt()
 		->with_text( $prompt )
 		->with_file( $data_uri )

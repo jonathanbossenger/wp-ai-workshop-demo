@@ -196,7 +196,7 @@ function wp_ai_workshop_demo_register_create_post_from_photo_ability() {
 			'meta'                => array(
 				'show_in_rest' => true,
 				'mcp'          => array(
-					'public' => true,
+					'public' => true, // Expose this ability via MCP.
 				),
 			),
 		)

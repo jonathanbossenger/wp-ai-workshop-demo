@@ -10,6 +10,8 @@ import {
 import { useState, useCallback } from '@wordpress/element';
 import { DataForm } from '@wordpress/dataviews/wp';
 
+const { ready } = await import( /* webpackIgnore: true */ '@wordpress/core-abilities' );
+await ready;
 const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
 const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
@@ -42,7 +44,7 @@ const SettingsPage = () => {
 
     const [ noticeStatus, setNoticeStatus ] = useState( 'info' );
     const [ noticeMessage, setNoticeMessage ] = useState(
-        __( 'Paste an image URL and (optionally) an angle, then generate a draft post.', 'wp-ai-workshop-demo' )
+        __( 'Paste an image URL and (optionally) an angle, then generate a draft post', 'wp-ai-workshop-demo' )
     );
     const [ isBusy, setIsBusy ] = useState( false );
 
@@ -94,7 +96,7 @@ const SettingsPage = () => {
         }
 
         setIsBusy( true );
-        updateNotice( __( 'Looking at your image and writing a post... this can take a moment.', 'wp-ai-workshop-demo' ), 'info' );
+        updateNotice( __( 'Looking at your image and writing a post… this can take a moment.', 'wp-ai-workshop-demo' ), 'info' );
 
         try {
             const result = await executeAbility( ABILITY, {

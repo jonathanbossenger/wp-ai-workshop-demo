@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 7 — Generate Post Copy from a Description.
+ * Step 5 — Generate Post Copy from a Description.
  *
  * Verifies includes/content.php implements the
  * `generate-post-from-description` ability callback: it calls the WP AI
@@ -14,7 +14,7 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step07GeneratePostCopyTest extends WorkshopTestCase {
+final class Step05GeneratePostCopyTest extends WorkshopTestCase {
 
 	private const FILE      = 'includes/content.php';
 	private const FN        = 'wp_ai_workshop_demo_generate_post_from_description';

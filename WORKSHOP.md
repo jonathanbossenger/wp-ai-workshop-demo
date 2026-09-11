@@ -18,7 +18,7 @@ The orchestrator demonstrates **ability composition** — one ability calling ot
 
 ## How this workshop works
 
-Each step below adds a piece of code, usually replacing a `// TODO:` comment.
+Each step below adds a piece of code, usually replacing a `// TODO:` comment. 
 
 ---
 
@@ -26,7 +26,7 @@ Each step below adds a piece of code, usually replacing a `// TODO:` comment.
 
 1. Install and activate one of the AI Connector plugins: **OpenAI**, **Anthropic**, or **Google**.
 2. Configure the connector with your API key.
-    - **Important:** Photo to Post needs a **vision-capable** model (image input). All current Claude, GPT-4o/4.1, and Gemini models qualify. No *image generation* is required — the user supplies the photo.
+   - **Important:** Photo to Post needs a **vision-capable** model (image input). All current Claude, GPT-4o/4.1, and Gemini models qualify. No *image generation* is required — the user supplies the photo.
 3. Install dependencies:
 
 ```shell
@@ -442,6 +442,10 @@ Then add the post-creation and featured-image helpers:
 ```php
 /**
  * Create a draft post and set its featured image from an image URL.
+ *
+ * @param string $title The Post title.
+ * @param string $content The Post content.
+ * @param string $image_url The external image url.
  */
 function wp_ai_workshop_demo_create_post( $title, $content, $image_url ) {
 	$post_id = wp_insert_post(
@@ -474,8 +478,18 @@ function wp_ai_workshop_demo_create_post( $title, $content, $image_url ) {
 /**
  * Sideload an image from a URL into the media library and set it as the
  * featured image for a post.
+ *
+ * @param string $post_id ID of the Post.
+ * @param string $image_url URL of the external image.
  */
 function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url ) {
+	// Verify that the image_url is a valid url, just to be safe.
+	if ( ! wp_http_validate_url( $image_url ) ) {
+		return new WP_Error( 'invalid_url', 'Image URL failed validation.' );
+	}
+
+	// The media_sideload_image() function is typically only used in the admin context
+	// This ensures that it can be used outside the admin context, such as in a REST API request or MCP tool.
 	if ( ! function_exists( 'media_sideload_image' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -493,23 +507,25 @@ function wp_ai_workshop_demo_set_featured_image_from_url( $post_id, $image_url )
 }
 ```
 
-## 7. Enqueue the WP AI Client and Abilities scripts
+## 7. Enqueue the Abilities module as a dependency of the plugin's script module
 
 https://make.wordpress.org/core/2026/03/24/client-side-abilities-api-in-wordpress-7-0/
 
 **File:** `includes/admin.php`
 
-The plugin already enqueues its own script module (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you add the two scripts the form depends on — the **WP AI Client** and the **`@wordpress/core-abilities`** module — and wire `@wordpress/core-abilities` in as a dependency of the plugin's script module.
+The plugin already enqueues its own script (`wp-ai-workshop-demo-script`) so the settings form renders from the start. In this step you enqueue the **`@wordpress/core-abilities`** script module that the form depends on, update the plugin script to be enqueued as a script module (so it works properly with `@wordpress/core-abilities`) and make `@wordpress/core-abilities` a dependency of the plugin's script module.
 
-First, replace the `// TODO: Enqueue the wp-ai-client and abilities scripts.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
+First, replace the `// TODO: Enqueue the Abilities script module.` comment in `wp_ai_workshop_demo_admin_enqueue_scripts()` with:
 
 ```php
-    wp_enqueue_script( 'wp-ai-client' );
+    if ( ! function_exists( 'wp_enqueue_script_module' ) ) {
+        return;
+    }
 
     wp_enqueue_script_module( '@wordpress/core-abilities' );
 ```
 
-Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script', … )` call to declare `@wordpress/core-abilities` as a dependency — change its empty dependency array from `array()` to `array( '@wordpress/core-abilities' )`:
+Then update the existing `wp_enqueue_script( 'wp-ai-workshop-demo-script', … )` call to enqueue it as a script module, and declare `@wordpress/core-abilities` as a dependency:
 
 ```php
     wp_enqueue_script_module(
@@ -522,15 +538,17 @@ Then update the existing `wp_enqueue_script_module( 'wp-ai-workshop-demo-script'
 
 ---
 
----
-
 ## 8. Build the Settings Page form
 
 **File:** `src/components/settings-page.jsx`
 
+### Generate a post via the Ability
+
 Import the Abilities API near the top of the file:
 
 ```js
+const { ready } = await import( /* webpackIgnore: true */ '@wordpress/core-abilities' );
+await ready;
 const { getAbility, executeAbility } = await import( /* webpackIgnore: true */ '@wordpress/abilities' );
 
 const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
@@ -617,7 +635,7 @@ add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_req
 
 ## 10. Expose the abilities via the MCP Adapter
 
-Update each Ability's registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
+Update each Ability registration to include the `mcp` meta, which exposes it to the MCP Adapter plugin:
 
 ```php
 'meta' => array(
@@ -628,7 +646,7 @@ Update each Ability's registration to include the `mcp` meta, which exposes it t
 ),
 ```
 
-These Abilities can now be adapted to MCP Tools, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
+These abilities can now be adapted to MCP Tools, and be driven by an MCP client (e.g. an AI agent) once the MCP Adapter is installed:
 
 - Install the [MCP Adapter](https://github.com/WordPress/mcp-adapter/releases) plugin.
 - Create an Application Password for an admin user.

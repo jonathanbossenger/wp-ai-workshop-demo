@@ -1,6 +1,6 @@
 <?php
 /**
- * Step 9 — Settings Page (Image URL form + Ability call).
+ * Step 8 — Settings Page (Image URL form + Ability call).
  *
  * Verifies src/components/settings-page.jsx imports the Abilities API,
  * renders an image URL form, and wires the Generate button to execute the
@@ -17,14 +17,14 @@ declare( strict_types=1 );
 
 namespace WpAiWorkshopDemo\Tests;
 
-final class Step09SettingsPageTest extends WorkshopTestCase {
+final class Step08SettingsPageTest extends WorkshopTestCase {
 
 	private const SRC_FILE   = 'src/components/settings-page.jsx';
 	private const BUILD_FILE = 'build/index.js';
 
 	private const ABILITY = 'wp-ai-workshop-demo/create-post-from-photo';
 
-	// 9a — Abilities import.
+	// 8a — Abilities import.
 
 	public function testAbilitiesImportPresent(): void {
 		$contents = $this->readPluginFile( self::SRC_FILE );
@@ -33,14 +33,14 @@ final class Step09SettingsPageTest extends WorkshopTestCase {
 		$this->assertStringContainsString( 'executeAbility', $contents );
 	}
 
-	// 9b — Image URL form.
+	// 8b — Image URL form.
 
 	public function testFormUsesImageUrlField(): void {
 		$contents = $this->readPluginFile( self::SRC_FILE );
 		$this->assertStringContainsString( 'image_url', $contents );
 	}
 
-	// 9c — Generate via the create-post-from-photo ability.
+	// 8c — Generate via the create-post-from-photo ability.
 
 	public function testTodoRemovedFromGenerateFromInput(): void {
 		$this->assertPluginFileNotContains(
@@ -56,7 +56,7 @@ final class Step09SettingsPageTest extends WorkshopTestCase {
 		$this->assertStringContainsString( 'executeAbility(', $contents );
 	}
 
-	// 9d — Build artifact reflects the new source.
+	// 8d — Build artifact reflects the new source.
 
 	public function testBuildOutputHasBeenRegenerated(): void {
 		$buildPath = WP_AI_WORKSHOP_DEMO_PLUGIN_DIR . '/' . self::BUILD_FILE;
@@ -71,7 +71,7 @@ final class Step09SettingsPageTest extends WorkshopTestCase {
 		$this->assertStringContainsString(
 			self::ABILITY,
 			$built,
-			'The build/index.js bundle does not reference the create-post-from-photo ability — re-run `npm run build` after applying the Step 9 changes.'
+			'The build/index.js bundle does not reference the create-post-from-photo ability — re-run `npm run build` after applying the Step 8 changes.'
 		);
 	}
 }
