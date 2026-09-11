@@ -59,8 +59,8 @@ To run a single step:
 | `Step04DescribeImageTest.php` | Step 4 — `wp_ai_workshop_demo_describe_image()` fetches the image as a data URI and uses `wp_ai_client_prompt()->with_file()->generate_text()` (vision) |
 | `Step05GeneratePostCopyTest.php` | Step 5 — `wp_ai_workshop_demo_generate_post_from_description()` uses `wp_ai_client_prompt()` and parses a JSON `{title, content}` response |
 | `Step06CreatePostFromPhotoTest.php` | Step 6 — `wp_ai_workshop_demo_create_post_from_photo()` composes the two abilities via `WP_Ability::execute()`, then creates a draft post and sets the featured image |
-| `Step07EnqueueScriptsTest.php` | Step 7 — `wp-ai-client` and `@wordpress/core-abilities` scripts are enqueued, and the plugin script declares the dependency |
-| `Step08SettingsPageTest.php` | Step 8 — `src/components/settings-page.jsx` has the abilities import, AI welcome message, image URL form, and `create-post-from-photo` ability call, AND `build/index.js` has been re-built |
+| `Step07EnqueueScriptsTest.php` | Step 7 — the `@wordpress/core-abilities` script module is enqueued, and the plugin script is enqueued as a script module declaring it as a dependency |
+| `Step08SettingsPageTest.php` | Step 8 — `src/components/settings-page.jsx` has the abilities import, image URL form, and `create-post-from-photo` ability call, AND `build/index.js` has been re-built |
 | `Step09RequestTimeoutTest.php` | Step 9 — `wp_ai_workshop_demo_set_request_timeout()` returns an integer and is hooked into the `wp_ai_client_default_request_timeout` filter |
 | `Step10McpAdapterTest.php` | Step 10 — Each ability's meta config exposes it via MCP (`'mcp' => array( 'public' => true )`) |
 

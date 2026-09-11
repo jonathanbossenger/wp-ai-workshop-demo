@@ -1,10 +1,10 @@
 <?php
 /**
- * Step 7 — Enqueue WP AI Client and Abilities Scripts.
+ * Step 7 — Enqueue the Abilities Script Module.
  *
- * Verifies includes/admin.php enqueues the wp-ai-client script and the
- * @wordpress/core-abilities script module, and that the plugin's own
- * script module declares @wordpress/core-abilities as a dependency.
+ * Verifies includes/admin.php enqueues the @wordpress/core-abilities
+ * script module, and that the plugin's own script is enqueued as a script
+ * module declaring @wordpress/core-abilities as a dependency.
  *
  * @package wp-ai-workshop-demo
  */
@@ -21,15 +21,11 @@ final class Step07EnqueueScriptsTest extends WorkshopTestCase {
 	public function testTodoCommentRemoved(): void {
 		$this->assertPluginFileNotContains(
 			self::FILE,
-			'// TODO: Enqueue the wp-ai-client and abilities scripts.'
+			'// TODO: Enqueue the Abilities script module.'
 		);
-	}
-
-	public function testWpAiClientScriptEnqueued(): void {
-		$this->assertFunctionBodyContains(
+		$this->assertPluginFileNotContains(
 			self::FILE,
-			self::FN,
-			"wp_enqueue_script( 'wp-ai-client' );"
+			"// TODO: Update the plugin's script to be enqueued as a module, and add the abilities script module as a dependency"
 		);
 	}
 
