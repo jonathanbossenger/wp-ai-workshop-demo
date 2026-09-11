@@ -26,7 +26,10 @@ require_once __DIR__ . '/includes/post.php';
 // Hook registrations.
 add_action( 'admin_menu', 'wp_ai_workshop_demo_register_tools_submenu' );
 add_action( 'admin_enqueue_scripts', 'wp_ai_workshop_demo_admin_enqueue_scripts' );
-// TODO: Register the ability category and the three Photo to Post ability hooks.
+add_action( 'wp_abilities_api_categories_init', 'wp_ai_workshop_demo_register_ability_categories' );
+add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_describe_image_ability' );
+add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_generate_post_from_description_ability' );
+add_action( 'wp_abilities_api_init', 'wp_ai_workshop_demo_register_create_post_from_photo_ability' );
 
 // Filters
-// TODO: Hook wp_ai_workshop_demo_set_request_timeout into the wp_ai_client_default_request_timeout filter.
+add_filter( 'wp_ai_client_default_request_timeout', 'wp_ai_workshop_demo_set_request_timeout' );

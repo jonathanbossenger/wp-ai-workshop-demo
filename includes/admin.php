@@ -48,16 +48,14 @@ function wp_ai_workshop_demo_admin_enqueue_scripts() {
 		return;
 	}
 
-    // TODO: Enqueue the Abilities script module.
+    wp_enqueue_script_module( '@wordpress/core-abilities' );
 
 	$asset_file = include plugin_dir_path( __DIR__ ) . 'build/index.asset.php';
-	// TODO: Update the plugin's script to be enqueued as a module, and add the abilities script module as a dependency
-    wp_enqueue_script(
+    wp_enqueue_script_module(
         'wp-ai-workshop-demo-script',
         plugins_url( 'build/index.js', __DIR__ ),
-        $asset_file['dependencies'],
+        array( '@wordpress/core-abilities' ),
         $asset_file['version'],
-        true
     );
 
 	wp_enqueue_style(

@@ -10,4 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// TODO: Add the wp_ai_workshop_demo_set_request_timeout() function to increase the AI Client request timeout.
+/**
+ * Set a custom request timeout for the AI Client.
+ *
+ * @return int
+ */
+function wp_ai_workshop_demo_set_request_timeout() {
+    return 120;
+}
