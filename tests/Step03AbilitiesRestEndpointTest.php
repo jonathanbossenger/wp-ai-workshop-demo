@@ -4,14 +4,15 @@
  *
  * The workshop step is "create an Application Password and curl the
  * abilities endpoint." We can't drive that interactive manual step in a
- * static test, but we CAN verify the live Studio site exposes the
+ * static test, but we CAN verify the local site exposes the
  * /wp-abilities/v1/abilities route once steps 1 and 2 have been
  * applied AND the WordPress Abilities API plugin is active.
  *
- * The test is skipped (not failed) when the site URL is not reachable,
- * so it doesn't get in the way when running the suite offline.
- *
- * Override the target with WP_AI_WORKSHOP_DEMO_SITE_URL=https://your-site/ .
+ * The site URL is taken from WP_AI_WORKSHOP_DEMO_SITE_URL when set, and
+ * otherwise read from the site itself via WP-CLI, so this works with any
+ * local WordPress environment. The test is skipped (not failed) when no
+ * site URL can be determined or the site is not reachable, so it doesn't
+ * get in the way when running the suite offline.
  *
  * @package wp-ai-workshop-demo
  */
@@ -22,16 +23,16 @@ namespace WpAiWorkshopDemo\Tests;
 
 final class Step03AbilitiesRestEndpointTest extends WorkshopTestCase {
 
-	private function siteUrl(): string {
-		$url = getenv( 'WP_AI_WORKSHOP_DEMO_SITE_URL' );
-		if ( ! is_string( $url ) || $url === '' ) {
-			$url = 'https://wordpress.wp.local/';
-		}
-		return rtrim( $url, '/' ) . '/';
-	}
-
 	public function testAbilitiesRestRouteIsDiscoverable(): void {
-		$indexUrl = $this->siteUrl() . 'wp-json/';
+		$siteUrl = $this->siteUrl();
+		if ( $siteUrl === null ) {
+			$this->markTestSkipped(
+				$this->noEnvironmentMessage( 'determine the site URL' )
+					. ' Alternatively set WP_AI_WORKSHOP_DEMO_SITE_URL to your local site URL.'
+			);
+		}
+
+		$indexUrl = $siteUrl . 'wp-json/';
 
 		$ctx     = stream_context_create( array(
 			'http' => array(
@@ -47,7 +48,7 @@ final class Step03AbilitiesRestEndpointTest extends WorkshopTestCase {
 
 		if ( $payload === false ) {
 			$this->markTestSkipped(
-				"Studio site at {$indexUrl} is not reachable. Start the site with `studio site start` or override WP_AI_WORKSHOP_DEMO_SITE_URL."
+				"The site at {$indexUrl} is not reachable. Start your local WordPress environment, or set WP_AI_WORKSHOP_DEMO_SITE_URL to the URL it is served on."
 			);
 		}
 

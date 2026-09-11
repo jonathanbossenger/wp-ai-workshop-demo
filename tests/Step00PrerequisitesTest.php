@@ -8,9 +8,10 @@
  * and that at least one of the supported AI Connector plugins (OpenAI,
  * Anthropic, or Google) is active with an API key configured.
  *
- * The live-site checks shell out to `studio wp` against the parent
- * Studio site. They are skipped (not failed) when the `studio` CLI is
- * unavailable, so the suite still runs offline.
+ * The live-site checks run through whichever WP-CLI can reach the local
+ * site (auto-detected, or set via WP_AI_WORKSHOP_DEMO_WP_CLI), so any local
+ * WordPress environment works. They are skipped (not failed) when no local
+ * environment is reachable, so the suite still runs offline.
  *
  * @package wp-ai-workshop-demo
  */
@@ -52,44 +53,31 @@ final class Step00PrerequisitesTest extends WorkshopTestCase {
 	}
 
 	public function testWorkshopDemoPluginActive(): void {
-		if ( ! function_exists( 'shell_exec' ) ) {
-			$this->markTestSkipped( '`shell_exec` is disabled — cannot query `studio wp` for active plugins.' );
+		$activeJson = $this->runWpCli( 'option', 'get', 'active_plugins', '--format=json' );
+		if ( $activeJson === null ) {
+			$this->markTestSkipped( $this->noEnvironmentMessage( 'query the active plugins' ) );
 		}
 
-		$sitePath = dirname( WP_AI_WORKSHOP_DEMO_PLUGIN_DIR, 3 );
-		$pathArg  = escapeshellarg( '--path=' . $sitePath );
+		$activePlugins = $this->decodeJsonFromOutput( $activeJson );
+		$this->assertIsArray( $activePlugins, "Unexpected response from `wp option get active_plugins`: $activeJson" );
 
-		$activeJson = @shell_exec( "studio wp $pathArg option get active_plugins --format=json 2>/dev/null" );
-		if ( ! is_string( $activeJson ) || trim( $activeJson ) === '' ) {
-			$this->markTestSkipped(
-				'Could not query active plugins via `studio wp`. Ensure the Studio CLI is installed (Studio app → Settings → Studio CLI for terminal) and the site is running.'
-			);
-		}
-
-		$activePlugins = json_decode( trim( $activeJson ), true );
-		$this->assertIsArray( $activePlugins, 'Unexpected response from `studio wp option get active_plugins`.' );
+		$pluginDirName = basename( WP_AI_WORKSHOP_DEMO_PLUGIN_DIR );
+		$pluginFile    = $pluginDirName . '/wp-ai-workshop-demo.php';
 
 		$this->assertContains(
-			'wp-ai-workshop-demo/wp-ai-workshop-demo.php',
+			$pluginFile,
 			$activePlugins,
-			'The wp-ai-workshop-demo plugin is not active. Activate it in wp-admin or run `studio wp plugin activate wp-ai-workshop-demo`.'
+			"The $pluginDirName plugin is not active. Activate it in wp-admin, or run `wp plugin activate $pluginDirName` with your environment's WP-CLI."
 		);
 	}
 
 	public function testAiConnectorActiveWithApiKey(): void {
-		if ( ! function_exists( 'shell_exec' ) ) {
-			$this->markTestSkipped( '`shell_exec` is disabled — cannot query `studio wp` for connector state.' );
-		}
-
-		$sitePath = dirname( WP_AI_WORKSHOP_DEMO_PLUGIN_DIR, 3 );
-		$pathArg  = escapeshellarg( '--path=' . $sitePath );
-
 		// Single PHP snippet: enumerate the AI connectors registered in WP
 		// Core's Connectors API, check each one's `is_active` callback, and
 		// resolve the API key from env var, constant, or option (in that
 		// order — matches core's `_wp_connectors_get_api_key_source`). Uses
-		// only double-quoted strings so `escapeshellarg` can wrap the whole
-		// thing in single quotes without any escaping headaches.
+		// only double-quoted strings so the snippet survives being passed
+		// through the shell as a single quoted argument.
 		$snippet = <<<'PHP'
 if ( ! function_exists( "wp_get_connectors" ) ) { echo "MISSING_API"; exit; }
 $ids = array( "openai", "anthropic", "google" );
@@ -112,22 +100,23 @@ foreach ( wp_get_connectors() as $id => $data ) {
 echo wp_json_encode( $result );
 PHP;
 
-		$output = @shell_exec( "studio wp $pathArg eval " . escapeshellarg( $snippet ) . ' 2>/dev/null' );
-		if ( ! is_string( $output ) || trim( $output ) === '' ) {
-			$this->markTestSkipped(
-				'Could not query AI Connectors via `studio wp eval`. Ensure the Studio CLI is installed (Studio app → Settings → Studio CLI for terminal) and the site is running.'
-			);
+		$output = $this->runWpCli( 'eval', $snippet );
+		if ( $output === null ) {
+			$this->markTestSkipped( $this->noEnvironmentMessage( 'query the AI Connectors' ) );
 		}
 
-		$output = trim( $output );
-		if ( $output === 'MISSING_API' ) {
+		$connectors = $this->decodeJsonFromOutput( $output );
+
+		// The snippet echoes a bare MISSING_API line when the Connectors API
+		// is absent. Match the line exactly: some runners echo the command
+		// they ran (snippet included) alongside its output.
+		if ( $connectors === null && in_array( 'MISSING_API', $this->outputLines( $output ), true ) ) {
 			$this->fail(
 				'WP Core Connectors API (`wp_get_connectors()`) is unavailable. The workshop requires WordPress 7.0 or later.'
 			);
 		}
 
-		$connectors = json_decode( $output, true );
-		$this->assertIsArray( $connectors, "Unexpected response from `studio wp eval`: $output" );
+		$this->assertIsArray( $connectors, "Unexpected response from `wp eval`: $output" );
 
 		$activeConnectorIds = array_keys( array_filter(
 			$connectors,

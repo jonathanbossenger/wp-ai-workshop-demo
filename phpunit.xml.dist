@@ -13,9 +13,21 @@
     </testsuites>
     <php>
         <!--
-         URL of the local WordPress site to probe in Step 3.
-         Override per-shell with WP_AI_WORKSHOP_DEMO_SITE_URL=https://your-site/ if your local URL is different.
+         The runtime checks (Steps 0 and 3) auto-detect your local WordPress
+         environment: they look for a WP-CLI that can reach the site (`wp`,
+         `studio`, `wp-env`, `ddev` or `lando`) and read the site URL from it.
+         Nothing here needs to be set for those environments.
+
+         Uncomment and adjust either of these if auto-detection does not cover
+         your setup — or export them in your shell instead, which takes
+         precedence (force="false").
+
+         WP_AI_WORKSHOP_DEMO_WP_CLI  the command that runs WP-CLI against your site.
+         WP_AI_WORKSHOP_DEMO_SITE_URL  the URL your local site is served on.
+         WP_AI_WORKSHOP_DEMO_SITE_PATH  the path to the WordPress installation.
         -->
-        <env name="WP_AI_WORKSHOP_DEMO_SITE_URL" value="https://wordpress.wp.local/" force="false"/>
+        <!-- <env name="WP_AI_WORKSHOP_DEMO_WP_CLI" value="docker compose exec -T wordpress wp" force="false"/> -->
+        <!-- <env name="WP_AI_WORKSHOP_DEMO_SITE_URL" value="https://example.wp.local/" force="false"/> -->
+        <!-- <env name="WP_AI_WORKSHOP_DEMO_SITE_PATH" value="/path/to/wordpress" force="false"/> -->
     </php>
 </phpunit>
